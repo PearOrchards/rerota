@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Business {
+  id           String        @id @default(uuid())
+  name         String
+  slug         String        @unique
+  staffMembers StaffMember[]
+}
+
+model StaffMember {
+  id           String       @id @default(uuid())
+  firstName    String
+  lastName     String
+  business     Business     @relation(fields: [businessId], references: [id])
+  businessId   String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  competencies Competency[]
+}
+
+model Category {
+  id             String         @id @default(uuid())
+  name           String
+  numberMatrixes NumberMatrix[]
+}
+
+model Tier {
+  id             String         @id @default(uuid())
+  name           String
+  numberMatrixes NumberMatrix[]
+  rides          Ride[]
+}
+
+model Position {
+  id             String         @id @default(uuid())
+  name           String
+  numberMatrixes NumberMatrix[]
+  competencies   Competency[]
+}
+
+model NumberMatrix {
+  tierId     String
+  tier       Tier     @relation(fields: [tierId], references: [id])
+  positionId String
+  position   Position @relation(fields: [positionId], references: [id])
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  time       Int // in days
+
+  @@id([tierId, positionId, categoryId])
+}
+
+model Ride {
+  id           String       @id @default(uuid())
+  name         String
+  description  String?
+  tierId       String
+  tier         Tier         @relation(fields: [tierId], references: [id])
+  competencies Competency[]
+}
+
+model Competency {
+  staffMemberId String
+  staffMember   StaffMember @relation(fields: [staffMemberId], references: [id])
+  rideId        String
+  ride          Ride        @relation(fields: [rideId], references: [id])
+  positionId    String
+  position      Position    @relation(fields: [positionId], references: [id])
+
+  achievedAt     DateTime  @default(now())
+  last_rotatedAt DateTime?
+
+  @@id([staffMemberId, rideId, positionId])
+}
