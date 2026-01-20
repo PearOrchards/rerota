@@ -29,6 +29,7 @@ model StaffMember {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   competencies Competency[]
+  identity     Identity?
 }
 
 model Category {
@@ -84,4 +85,34 @@ model Competency {
   last_rotatedAt DateTime?
 
   @@id([staffMemberId, rideId, positionId])
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+model Permission {
+  slug     String           @id @unique
+  resource String
+  action   PermissionAction
+  roles    Role[]           @relation("RolePermissions")
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  permissions Permission[] @relation("RolePermissions")
+  identities  Identity[]
+}
+
+model Identity {
+  staffMemberId String      @id @unique
+  staffMember   StaffMember @relation(fields: [staffMemberId], references: [id])
+  email         String      @unique
+  lastLoginAt   DateTime?
+  role          Role        @relation(fields: [roleId], references: [id])
+  roleId        String
 }
