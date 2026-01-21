@@ -5,16 +5,6 @@ import { ThemeProvider as NextThemeProvider } from "next-themes";
 import type { Metadata } from "next";
 import "./globals.css";
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
-
 const figtreeFont = Figtree({
 	variable: "--font-figtree",
 	subsets: ["latin"],
@@ -44,7 +34,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body
-				className={`${figtreeFont.variable} antialiased bg-blue-50 dark:bg-zinc-900`}
+				className={`${figtreeFont.className} antialiased bg-blue-50 dark:bg-zinc-900`}
 			>
 				<ThemeProvider>
 					<SidebarProvider>

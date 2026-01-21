@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	Sidebar,
 	SidebarContent, SidebarFooter,
@@ -16,8 +18,10 @@ import {
 	ChevronRight,
 	UserPlus,
 	LogOut,
+	Hash,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const managerItems = [
@@ -41,6 +45,11 @@ const managerItems = [
 		url: "/rides",
 		icon: RollerCoaster,
 	},
+	{
+		title: "Numbers",
+		url: "/numbers",
+		icon: Hash,
+	},
 ];
 
 const leaderItems = [];
@@ -56,6 +65,8 @@ const commonItems = [
 
 
 export function AppSidebar() {
+	const path = usePathname();
+
 	return (
 		<Sidebar>
 			<SidebarHeader className="bg-zinc-800/50 shadow-md m-2 rounded-xl pl-4 font-bold tracking-wide">
@@ -65,12 +76,12 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{managerItems.map((item) => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild>
-										<Link href={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
+							{managerItems.map(({ title, url, icon: Icon }) => (
+								<SidebarMenuItem key={title}>
+									<SidebarMenuButton className={path === url ? "bg-sidebar-accent/50" : ""} asChild>
+										<Link href={url}>
+											<Icon />
+											<span>{title}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -81,12 +92,12 @@ export function AppSidebar() {
 				<SidebarGroup className="mt-auto">
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{commonItems.map((item) => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild>
-										<Link href={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
+							{commonItems.map(({ title, url, icon: Icon }) => (
+								<SidebarMenuItem key={title}>
+									<SidebarMenuButton className={path === url ? "bg-sidebar-accent/50" : ""} asChild>
+										<Link href={url}>
+											<Icon />
+											<span>{title}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
