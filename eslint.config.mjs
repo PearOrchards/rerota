@@ -7,6 +7,7 @@ const eslintConfig = defineConfig([
 	...nextTs,
 	// Override default ignores of eslint-config-next.
 	globalIgnores([
+		"app/components/ui/**", // don't bother with shadcn components (yet)
 		// Default ignores of eslint-config-next:
 		".next/**",
 		"out/**",
