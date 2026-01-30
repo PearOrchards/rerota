@@ -84,7 +84,7 @@ const staff: Omit<StaffMember, "createdAt" | "updatedAt" | "businessId">[] = [
 	},
 ];
 
-const category: Category[] = [
+const category: Omit<Category, "businessId">[] = [
 	{
 		id: "1",
 		name: "Training Required",
@@ -103,7 +103,7 @@ const category: Category[] = [
 	},
 ];
 
-const tiers: Tier[] = [
+const tiers: Omit<Tier, "businessId">[] = [
 	{
 		id: "1",
 		name: "Tier 1",
@@ -122,7 +122,7 @@ const tiers: Tier[] = [
 	},
 ];
 
-const positions: Position[] = [
+const positions: Omit<Position, "businessId">[] = [
 	{
 		id: "1",
 		name: "Attendant",
@@ -336,7 +336,7 @@ const matrix: NumberMatrix[] = [
 	},
 ];
 
-const rides: Ride[] = [
+const rides: Omit<Ride, "businessId">[] = [
 	{
 		id: "1",
 		name: "The Triangle",
@@ -609,24 +609,24 @@ async function main() {
 	for (const cat of category) {
 		await p.category.upsert({
 			where: { id: cat.id },
-			update: cat,
-			create: cat,
+			update: { ...cat, businessId: bis.id },
+			create: { ...cat, businessId: bis.id },
 		});
 	}
 
 	for (const tier of tiers) {
 		await p.tier.upsert({
 			where: { id: tier.id },
-			update: tier,
-			create: tier,
+			update: { ...tier, businessId: bis.id },
+			create: { ...tier, businessId: bis.id },
 		});
 	}
 
 	for (const position of positions) {
 		await p.position.upsert({
 			where: { id: position.id },
-			update: position,
-			create: position,
+			update: { ...position, businessId: bis.id },
+			create: { ...position, businessId: bis.id },
 		});
 	}
 
@@ -649,8 +649,8 @@ async function main() {
 	for (const ride of rides) {
 		await p.ride.upsert({
 			where: { id: ride.id },
-			update: ride,
-			create: ride,
+			update: { ...ride, businessId: bis.id },
+			create: { ...ride, businessId: bis.id },
 		});
 	}
 

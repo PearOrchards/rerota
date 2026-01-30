@@ -14,10 +14,15 @@ datasource db {
 }
 
 model Business {
-  id           String        @id @default(uuid())
-  name         String
-  slug         String        @unique
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
   staffMembers StaffMember[]
+  rides        Ride[]
+  categories   Category[]
+  tiers        Tier[]
+  positions    Position[]
 }
 
 model StaffMember {
@@ -33,21 +38,30 @@ model StaffMember {
 }
 
 model Category {
-  id             String         @id @default(uuid())
-  name           String
+  id   String @id @default(uuid())
+  name String
+
+  businessId     String
+  business       Business       @relation(fields: [businessId], references: [id])
   numberMatrixes NumberMatrix[]
 }
 
 model Tier {
-  id             String         @id @default(uuid())
-  name           String
+  id   String @id @default(uuid())
+  name String
+
+  businessId     String
+  business       Business       @relation(fields: [businessId], references: [id])
   numberMatrixes NumberMatrix[]
   rides          Ride[]
 }
 
 model Position {
-  id             String         @id @default(uuid())
-  name           String
+  id   String @id @default(uuid())
+  name String
+
+  businessId     String
+  business       Business       @relation(fields: [businessId], references: [id])
   numberMatrixes NumberMatrix[]
   competencies   Competency[]
 }
@@ -65,11 +79,14 @@ model NumberMatrix {
 }
 
 model Ride {
-  id           String       @id @default(uuid())
-  name         String
-  description  String?
-  tierId       String
-  tier         Tier         @relation(fields: [tierId], references: [id])
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  tierId      String
+  tier        Tier    @relation(fields: [tierId], references: [id])
+
+  businessId   String
+  business     Business     @relation(fields: [businessId], references: [id])
   competencies Competency[]
 }
 
