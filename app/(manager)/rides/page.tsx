@@ -1,50 +1,24 @@
-"use client";
+import type { Ride } from "@/generated/prisma/client";
+import { Client } from "./client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/DataTable";
-import { Ellipsis } from "lucide-react";
-import { getRides } from "./_actions/getRides";
-import { useEffect, useState } from "react";
-import { Ride } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
-const columns: ColumnDef<Ride, unknown>[] = [
-	{
-		accessorKey: "name",
-		header: "Name",
-	},
-	{
-		accessorKey: "description",
-		header: "Description",
-		cell: ({ row }) => (
-			<span className="truncate">{ row.getValue("description") }</span>
-		),
-	},
-	{
-		accessorKey: "tier.name",
-		header: "Tier",
-	},
-	{
-		id: "actions",
-		header: "",
-		cell: () => (
-			<span><Ellipsis className="m-auto hover:cursor-pointer" /></span>
-		),
-	},
-];
+export async function getRides(): Promise<Ride[]> {
+	const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
+	return await prisma.ride.findMany({
+		where: {
+			businessId: { equals: STATIC_BUSINESS_ID },
+		},
+		include: {
+			tier: true,
+		},
+	});
+}
 
-// This is a unique case where the table will not be re-used, as it's more complex than the others.
 export default function RidesPage() {
-	const [rides, setRides] = useState<Ride[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			setRides(await getRides());
-			setIsLoading(false);
-		};
-
-		fetchData();
-	}, []);
+	const rides = getRides();
 
 	return (
 		<main className="px-16 py-12 flex flex-col w-full">
@@ -52,11 +26,11 @@ export default function RidesPage() {
 			<p className="font-normal italic">The long list of all the rides.</p>
 
 			<div className="flex p-4">
-				{isLoading ? (
-					<p>Loading...</p>
-				) : (
-					<DataTable data={rides} columns={columns} />
-				)}
+				<Suspense fallback={
+					<div><Spinner /></div>
+				}>
+					<Client data={rides} />
+				</Suspense>
 			</div>
 		</main>
 	);
