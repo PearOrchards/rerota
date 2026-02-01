@@ -3,14 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Copy, Ellipsis, Pencil, Plus, Trash } from "lucide-react";
 import { DataTable } from "@/components/DataTable";
-import { Ride, Tier } from "@/generated/prisma/client";
+import { Tier } from "@/generated/prisma/client";
+import type { RideWithExtra } from "@/lib/types/rides";
 import { use } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { RideFormModal } from "./RideFormModal";
 import { Button } from "@/components/ui/button";
 
 interface TableProps {
-	data: Promise<Ride[]>;
+	data: Promise<RideWithExtra[]>;
 	tiers: Promise<Tier[]>;
 	businessId: string;
 }
@@ -18,7 +19,7 @@ interface TableProps {
 const createColumns = (
 	tiers: Tier[],
 	businessId: string,
-): ColumnDef<Ride>[] => [
+): ColumnDef<RideWithExtra>[] => [
 	{
 		accessorKey: "name",
 		header: "Name",
@@ -35,6 +36,10 @@ const createColumns = (
 		header: "Tier",
 	},
 	{
+		accessorKey: "competenciesCount",
+		header: "Competencies",
+	},
+	{
 		id: "actions",
 		header: "",
 		cell: ({ row }) => (
@@ -48,10 +53,12 @@ function Actions({
 	tiers,
 	businessId,
 }: {
-	ride: Ride;
+	ride: RideWithExtra;
 	tiers: Tier[];
 	businessId: string;
 }) {
+	const { competenciesCount, ...rest } = ride; // Exclude competenciesCount when passing ride data
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -59,7 +66,7 @@ function Actions({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="center" side="left">
 				<RideFormModal
-					ride={ride}
+					ride={rest}
 					trigger={
 						<DropdownMenuItem onSelect={(e) => e.preventDefault()} className="hover:cursor-pointer">
 							<Pencil /> Edit

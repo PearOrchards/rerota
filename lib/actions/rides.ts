@@ -1,13 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import type { RideWithExtra } from "@/lib/types/rides";
 import { Ride, Tier } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
 const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
 
-export async function getRides(): Promise<Ride[]> {
-	return await prisma.ride.findMany({
+export async function getRides(): Promise<RideWithExtra[]> {
+	const rides = await prisma.ride.findMany({
 		where: {
 			businessId: { equals: STATIC_BUSINESS_ID },
 		},
@@ -15,6 +16,18 @@ export async function getRides(): Promise<Ride[]> {
 			tier: true,
 		},
 	});
+
+	return await Promise.all(
+		rides.map(async (ride) => {
+			const competenciesCount = await prisma.competency.count({
+				where: { rideId: ride.id },
+			});
+			return {
+				...ride,
+				competenciesCount,
+			};
+		}),
+	) as RideWithExtra[];
 }
 
 export async function getTiers(): Promise<Tier[]> {
