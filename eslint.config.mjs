@@ -7,7 +7,8 @@ const eslintConfig = defineConfig([
 	...nextTs,
 	// Override default ignores of eslint-config-next.
 	globalIgnores([
-		"app/components/ui/**", // don't bother with shadcn components (yet)
+		"components/ui/**", // don't bother with shadcn components (yet)
+		"generated/**", // don't lint generated Prisma files
 		// Default ignores of eslint-config-next:
 		".next/**",
 		"out/**",

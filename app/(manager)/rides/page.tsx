@@ -1,24 +1,14 @@
-import type { Ride } from "@/generated/prisma/client";
-import { Client } from "./client";
-
-import { prisma } from "@/lib/prisma";
+import { Table } from "./table";
 import { Suspense } from "react";
 import { Spinner } from "@/components/ui/spinner";
 
-export async function getRides(): Promise<Ride[]> {
-	const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
-	return await prisma.ride.findMany({
-		where: {
-			businessId: { equals: STATIC_BUSINESS_ID },
-		},
-		include: {
-			tier: true,
-		},
-	});
-}
+import { getRides, getTiers } from "@/lib/actions/rides";
+
+const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
 
 export default function RidesPage() {
 	const rides = getRides();
+	const tiers = getTiers();
 
 	return (
 		<main className="px-16 py-12 flex flex-col w-full">
@@ -29,7 +19,7 @@ export default function RidesPage() {
 				<Suspense fallback={
 					<div><Spinner /></div>
 				}>
-					<Client data={rides} />
+					<Table data={rides} tiers={tiers} businessId={STATIC_BUSINESS_ID} />
 				</Suspense>
 			</div>
 		</main>
