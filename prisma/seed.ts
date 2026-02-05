@@ -1,6 +1,15 @@
 import { prisma as p } from "@/lib/prisma";
-import { PermissionAction } from "../generated/prisma/client";
-import { Business, Category, Competency, NumberMatrix, Position, Ride, StaffMember, Tier } from ".prisma/client/client";
+import {
+	PermissionAction,
+	Business,
+	Category,
+	Competency,
+	NumberMatrix,
+	Position,
+	Ride,
+	StaffMember,
+	Tier,
+} from "../generated/prisma/client";
 
 const permissionResources = [
 	"staffMember",
@@ -107,18 +116,22 @@ const tiers: Omit<Tier, "businessId">[] = [
 	{
 		id: "1",
 		name: "Tier 1",
+		order: 1,
 	},
 	{
 		id: "2",
 		name: "Tier 2",
+		order: 2,
 	},
 	{
 		id: "3",
 		name: "Tier 3",
+		order: 3,
 	},
 	{
 		id: "4",
 		name: "Tier 4",
+		order: 4,
 	},
 ];
 
@@ -126,10 +139,12 @@ const positions: Omit<Position, "businessId">[] = [
 	{
 		id: "1",
 		name: "Attendant",
+		order: 1,
 	},
 	{
 		id: "2",
 		name: "Operator",
+		order: 2,
 	},
 ];
 
