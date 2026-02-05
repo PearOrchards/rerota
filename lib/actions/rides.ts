@@ -88,3 +88,11 @@ export async function updateRide(data: Ride): Promise<boolean> {
 	}
 }
 
+export async function deleteRide(id: string): Promise<boolean> {
+	await prisma.ride.delete({
+		where: { id },
+	});
+
+	revalidatePath("/rides");
+	return true;
+}

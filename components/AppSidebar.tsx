@@ -26,42 +26,60 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const managerItems = [
 	{
-		title: "Dashboard",
-		url: "/",
-		icon: Home,
+		header: "Home",
+		sections: [
+			{
+				title: "Dashboard",
+				url: "/",
+				icon: Home,
+			},
+		],
 	},
 	{
-		title: "Business",
-		url: "/business",
-		icon: LucideBriefcaseBusiness,
+		header: "Manage",
+		sections: [
+			{
+				title: "Staff",
+				url: "/staff",
+				icon: Users,
+			},
+			{
+				title: "Rides",
+				url: "/rides",
+				icon: RollerCoaster,
+			},
+		],
 	},
 	{
-		title: "Staff",
-		url: "/staff",
-		icon: Users,
-	},
-	{
-		title: "Rides",
-		url: "/rides",
-		icon: RollerCoaster,
-	},
-	{
-		title: "Numbers",
-		url: "/numbers",
-		icon: Hash,
+		header: "Logic",
+		sections: [
+			{
+				title: "Business",
+				url: "/business",
+				icon: LucideBriefcaseBusiness,
+			},
+			{
+				title: "Numbers",
+				url: "/numbers",
+				icon: Hash,
+			},
+		],
 	},
 ];
 
 const leaderItems = [];
 const staffItems = [];
 
-const commonItems = [
-	{
-		title: "Settings",
-		url: "/settings",
-		icon: Settings,
-	},
-];
+const commonItems = {
+	header: "App",
+	sections: [
+		{
+			title: "Settings",
+			url: "/settings",
+			icon: Settings,
+		},
+	],
+};
 
 
 export function AppSidebar() {
@@ -73,26 +91,30 @@ export function AppSidebar() {
 				REROTA
 			</SidebarHeader>
 			<SidebarContent>
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{managerItems.map(({ title, url, icon: Icon }) => (
-								<SidebarMenuItem key={title}>
-									<SidebarMenuButton className={path === url ? "bg-sidebar-accent/50" : ""} asChild>
-										<Link href={url}>
-											<Icon />
-											<span>{title}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
+				{ managerItems.map(({ header, sections }) => (
+					<SidebarGroup key={header}>
+						<SidebarGroupLabel>{header}</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{sections.map(({ title, url, icon: Icon }) => (
+									<SidebarMenuItem key={title}>
+										<SidebarMenuButton className={path === url ? "bg-sidebar-accent/50" : ""} asChild>
+											<Link href={url}>
+												<Icon />
+												<span>{title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				)) }
 				<SidebarGroup className="mt-auto">
+					<SidebarGroupLabel>{commonItems.header}</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{commonItems.map(({ title, url, icon: Icon }) => (
+							{commonItems.sections.map(({ title, url, icon: Icon }) => (
 								<SidebarMenuItem key={title}>
 									<SidebarMenuButton className={path === url ? "bg-sidebar-accent/50" : ""} asChild>
 										<Link href={url}>
