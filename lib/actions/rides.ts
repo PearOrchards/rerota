@@ -35,6 +35,9 @@ export async function getTiers(): Promise<Tier[]> {
 		where: {
 			businessId: { equals: STATIC_BUSINESS_ID },
 		},
+		orderBy: {
+			order: "asc",
+		},
 	});
 }
 
@@ -95,4 +98,23 @@ export async function deleteRide(id: string): Promise<boolean> {
 
 	revalidatePath("/rides");
 	return true;
+}
+
+export async function updateTierOrders(tiers: Tier[]): Promise<boolean> {
+	try {
+		// Update each tier's order in a transaction
+		await prisma.$transaction(
+			tiers.map((tier, index) =>
+				prisma.tier.update({
+					where: { id: tier.id },
+					data: { order: index + 1 },
+				}),
+			),
+		);
+		revalidatePath("/business");
+		return true;
+	} catch (error) {
+		console.error("Error updating tier orders:", error);
+		return false;
+	}
 }
