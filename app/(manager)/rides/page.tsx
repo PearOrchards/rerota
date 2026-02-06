@@ -1,7 +1,8 @@
 import { Table } from "./components/Table";
 import { RideFormModal } from "./components/RideFormModal";
 
-import { getRides, getTiers } from "@/lib/actions/rides";
+import { getRides } from "@/lib/actions/rides";
+import { getTiers } from "@/lib/actions/tiers";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 

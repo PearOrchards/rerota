@@ -3,13 +3,22 @@
 import { DraggableDataTable } from "@/components/DraggableDataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Tier } from "@/generated/prisma/client";
-import { updateTierOrders } from "@/lib/actions/rides";
+import { updateTierOrders } from "@/lib/actions/tiers";
 import { useOptimistic } from "react";
+import { Actions } from "./Actions";
 
 const columns: ColumnDef<Tier>[] = [
 	{
 		accessorKey: "name",
 		header: "Name",
+	},
+	{
+		id: "actions",
+		header: "",
+		cell: ({ row }) => {
+			const tier = row.original;
+			return <Actions tier={tier} />;
+		},
 	},
 ];
 
