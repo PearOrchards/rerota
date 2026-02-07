@@ -14,7 +14,7 @@ export function Actions({
 	tier,
 }: ActionsProps) {
 	return (
-		<div className="w-min">
+		<div>
 			<TierFormModal
 				trigger={
 					<Button variant="ghost" size="icon">

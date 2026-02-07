@@ -64,7 +64,7 @@ export function EntityFormModal<T extends Record<string, unknown>>({
 		setFormData((prev) => ({ ...prev, [field]: value }));
 	};
 
-	const handleSubmit = async (e: React.SubmitEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError(null);
 

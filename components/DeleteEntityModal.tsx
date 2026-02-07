@@ -35,7 +35,7 @@ export function DeleteEntityModal({
 	const [open, setOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
 
-	const handleConfirm = async (e: React.SubmitEvent) => {
+	const handleConfirm = async (e: React.FormEvent) => {
 		e.preventDefault();
 
 		startTransition(async () => {

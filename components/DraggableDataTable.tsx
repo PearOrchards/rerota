@@ -142,7 +142,7 @@ export function DraggableDataTable<TData extends DraggableData>({
 							<TableRow key={group.id}>
 								<TableHead className="w-12"></TableHead>
 								{ group.headers.map(header => (
-									<TableHead key={header.id}>
+									<TableHead key={header.id} className={ !header.column.columnDef.header ? "w-0" : "" }>
 										{ header.isPlaceholder
 											? null
 											: flexRender(
@@ -188,11 +188,13 @@ export function DraggableDataTable<TData extends DraggableData>({
 											<td className="p-2 border w-12">
 												<GripVertical className="h-5 w-5 text-gray-400" />
 											</td>
-											{ row.getVisibleCells().map(cell => (
-												<td key={cell.id} className="p-2 border text-center">
-													{ flexRender(cell.column.columnDef.cell, cell.getContext())}
-												</td>
-											))}
+											{ row.getVisibleCells()
+												.filter(cell => cell.column.id !== "actions")
+												.map(cell => (
+													<td key={cell.id} className={ "p-2 border text-center" }>
+														{ flexRender(cell.column.columnDef.cell, cell.getContext())}
+													</td>
+												))}
 										</tr>
 									))
 								}
