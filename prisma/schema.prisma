@@ -66,6 +66,7 @@ model Position {
   business       Business       @relation(fields: [businessId], references: [id])
   numberMatrixes NumberMatrix[]
   competencies   Competency[]
+  rides          Ride[]
 }
 
 model NumberMatrix {
@@ -90,6 +91,7 @@ model Ride {
   businessId   String
   business     Business     @relation(fields: [businessId], references: [id])
   competencies Competency[]
+  positions    Position[]
 }
 
 model Competency {

@@ -351,36 +351,41 @@ const matrix: NumberMatrix[] = [
 	},
 ];
 
-const rides: Omit<Ride, "businessId">[] = [
+const rides: (Omit<Ride, "businessId"> & { positionIds: string[] })[] = [
 	{
 		id: "1",
 		name: "The Triangle",
 		description: "The point of the UK.",
 		tierId: "4",
+		positionIds: ["1", "2"],
 	},
 	{
 		id: "2",
 		name: "The Square",
 		description: "This description has a really long description which would have no way of fitting normally, so it gets cut. RIP.",
 		tierId: "4",
+		positionIds: ["1", "2"],
 	},
 	{
 		id: "3",
 		name: "The Circle",
 		description: "Round and round we go.",
 		tierId: "3",
+		positionIds: ["1", "2"],
 	},
 	{
 		id: "4",
 		name: "The Rectangle",
 		description: "Not quite The Square.",
 		tierId: "2",
+		positionIds: ["1", "2"],
 	},
 	{
 		id: "5",
 		name: "The Pentagon",
 		description: "Five sides of fun.",
 		tierId: "1",
+		positionIds: ["1"],
 	},
 ];
 
@@ -662,10 +667,23 @@ async function main() {
 
 	console.log("RIDES...");
 	for (const ride of rides) {
+		const { positionIds, ...rideData } = ride;
 		await p.ride.upsert({
 			where: { id: ride.id },
-			update: { ...ride, businessId: bis.id },
-			create: { ...ride, businessId: bis.id },
+			update: {
+				...rideData,
+				businessId: bis.id,
+				positions: {
+					set: positionIds.map(id => ({ id })),
+				},
+			},
+			create: {
+				...rideData,
+				businessId: bis.id,
+				positions: {
+					connect: positionIds.map(id => ({ id })),
+				},
+			},
 		});
 	}
 
