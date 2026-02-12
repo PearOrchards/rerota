@@ -1,5 +1,3 @@
-const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
-
 // Only contains title as all other parts are parallel components, meaning its in the layout.tsx file.
 export default function BusinessPage() {
 

@@ -5,10 +5,10 @@ import { getRides } from "@/lib/actions/rides";
 import { getTiers } from "@/lib/actions/tiers";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-
-const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function RidesPage() {
+	const session = await requireSession();
 	const rides = await getRides();
 	const tiers = await getTiers();
 
@@ -27,13 +27,13 @@ export default async function RidesPage() {
 							</Button>
 						}
 						availableTiers={tiers}
-						businessId={STATIC_BUSINESS_ID}
+						businessId={session.businessId}
 					/>
 				</div>
 			</div>
 
 			<div className="flex py-4">
-				<Table data={rides} tiers={tiers} businessId={STATIC_BUSINESS_ID} />
+				<Table data={rides} tiers={tiers} businessId={session.businessId} />
 			</div>
 		</main>
 	);

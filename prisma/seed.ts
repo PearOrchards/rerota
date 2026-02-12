@@ -57,7 +57,17 @@ const roles = [
 			"competency:CREATE", "competency:READ", "competency:UPDATE", "competency:DELETE",
 		],
 	},
-	// Not including basic staff for now
+	{
+		name: "Staff", permissions: [
+			"staffMember:READ",
+			"business:READ",
+			"tier:READ",
+			"position:READ",
+			"numberMatrix:READ",
+			"ride:READ",
+			"competency:READ",
+		],
+	},
 ];
 
 const business: Omit<Business, "id"> = {

@@ -84,6 +84,15 @@ const commonItems = {
 
 export function AppSidebar() {
 	const path = usePathname();
+	if (path === "/login" || path === "/unauthorized") {
+		return null;
+	}
+
+	const logout = async (event: Event) => {
+		event.preventDefault();
+		await fetch("/api/auth/logout", { method: "POST" });
+		window.location.href = "/login";
+	};
 
 	return (
 		<Sidebar>
@@ -140,8 +149,8 @@ export function AppSidebar() {
 								</SidebarMenuButton>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent side="right">
-								<DropdownMenuItem>
-									<LogOut /> Sign Out
+								<DropdownMenuItem onSelect={logout}>
+									<LogOut /> Log Out
 								</DropdownMenuItem>
 								<DropdownMenuItem>
 									<UserPlus /> Add Account

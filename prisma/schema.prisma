@@ -130,10 +130,40 @@ model Role {
 }
 
 model Identity {
-  staffMemberId String      @id @unique
-  staffMember   StaffMember @relation(fields: [staffMemberId], references: [id])
-  email         String      @unique
-  lastLoginAt   DateTime?
-  role          Role        @relation(fields: [roleId], references: [id])
-  roleId        String
+  staffMemberId   String         @id @unique
+  staffMember     StaffMember    @relation(fields: [staffMemberId], references: [id])
+  email           String         @unique
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+  disabledAt      DateTime?
+  role            Role           @relation(fields: [roleId], references: [id])
+  roleId          String
+  magicLinks      MagicLink[]
+  refreshTokens   RefreshToken[]
+}
+
+model MagicLink {
+  id         String    @id @default(uuid())
+  identity   Identity  @relation(fields: [identityId], references: [staffMemberId])
+  identityId String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+  ip         String?
+  userAgent  String?
+}
+
+model RefreshToken {
+  id            String        @id @default(uuid())
+  identity      Identity      @relation(fields: [identityId], references: [staffMemberId])
+  identityId    String
+  jti           String        @unique
+  tokenHash     String?
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  rotatedFromId String?       @unique
+  rotatedFrom   RefreshToken? @relation("RefreshTokenRotation", fields: [rotatedFromId], references: [id])
+  rotatedTo     RefreshToken? @relation("RefreshTokenRotation")
 }

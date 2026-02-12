@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 import type { RideWithExtra } from "@/lib/types/rides";
 import { Ride } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
-
-const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
+import { requirePermission } from "@/lib/auth/rbac";
 
 export async function getRides(): Promise<RideWithExtra[]> {
+	const session = await requirePermission("ride:READ");
 	const rides = await prisma.ride.findMany({
 		where: {
-			businessId: { equals: STATIC_BUSINESS_ID },
+			businessId: { equals: session.businessId },
 		},
 		include: {
 			tier: true,
@@ -32,6 +32,7 @@ export async function getRides(): Promise<RideWithExtra[]> {
 
 export async function createRide(data: Ride): Promise<boolean> {
 	// validation
+	const session = await requirePermission("ride:CREATE");
 	const { id, tierId, businessId, ...createData } = data;
 
 	try {
@@ -42,7 +43,7 @@ export async function createRide(data: Ride): Promise<boolean> {
 					connect: { id: tierId },
 				},
 				business: {
-					connect: { id: businessId },
+					connect: { id: session.businessId },
 				},
 			},
 		});
@@ -55,11 +56,19 @@ export async function createRide(data: Ride): Promise<boolean> {
 }
 
 export async function updateRide(data: Ride): Promise<boolean> {
+	const session = await requirePermission("ride:UPDATE");
 	const { id, tierId, businessId, ...rest } = data;
 
 	// validation
 
 	try {
+		const existing = await prisma.ride.findFirst({
+			where: { id, businessId: session.businessId },
+		});
+		if (!existing) {
+			throw new Error("Ride not found.");
+		}
+
 		const updatedRide = await prisma.ride.update({
 			where: { id },
 			data: {
@@ -68,7 +77,7 @@ export async function updateRide(data: Ride): Promise<boolean> {
 					connect: { id: tierId },
 				},
 				business: {
-					connect: { id: businessId },
+					connect: { id: session.businessId },
 				},
 			},
 		});
@@ -81,6 +90,14 @@ export async function updateRide(data: Ride): Promise<boolean> {
 }
 
 export async function deleteRide(id: string): Promise<boolean> {
+	const session = await requirePermission("ride:DELETE");
+	const existing = await prisma.ride.findFirst({
+		where: { id, businessId: session.businessId },
+	});
+	if (!existing) {
+		throw new Error("Ride not found.");
+	}
+
 	await prisma.ride.delete({
 		where: { id },
 	});
@@ -88,4 +105,3 @@ export async function deleteRide(id: string): Promise<boolean> {
 	revalidatePath("/rides");
 	return true;
 }
-

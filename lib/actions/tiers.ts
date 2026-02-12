@@ -3,13 +3,13 @@
 import { prisma } from "@/lib/prisma";
 import { Tier } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
-
-const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
+import { requirePermission } from "@/lib/auth/rbac";
 
 export async function getTiers(): Promise<Tier[]> {
+	const session = await requirePermission("tier:READ");
 	return await prisma.tier.findMany({
 		where: {
-			businessId: { equals: STATIC_BUSINESS_ID },
+			businessId: { equals: session.businessId },
 		},
 		orderBy: {
 			order: "asc",
@@ -18,6 +18,7 @@ export async function getTiers(): Promise<Tier[]> {
 }
 
 export async function createTier(data: Tier): Promise<boolean> {
+	const session = await requirePermission("tier:CREATE");
 	const { id, businessId, ...createData } = data;
 
 	try {
@@ -25,7 +26,7 @@ export async function createTier(data: Tier): Promise<boolean> {
 			data: {
 				...createData,
 				business: {
-					connect: { id: businessId },
+					connect: { id: session.businessId },
 				},
 			},
 		});
@@ -38,17 +39,20 @@ export async function createTier(data: Tier): Promise<boolean> {
 }
 
 export async function updateTier(data: Tier): Promise<boolean> {
+	const session = await requirePermission("tier:UPDATE");
 	const { id, businessId, ...rest } = data;
 
 	try {
+		const existing = await prisma.tier.findFirst({
+			where: { id, businessId: session.businessId },
+		});
+		if (!existing) {
+			throw new Error("Tier not found.");
+		}
+
 		const updatedTier = await prisma.tier.update({
 			where: { id },
-			data: {
-				...rest,
-				business: {
-					connect: { id: businessId },
-				},
-			},
+			data: { ...rest },
 		});
 		revalidatePath("/tiers");
 		return !!updatedTier;
@@ -59,6 +63,7 @@ export async function updateTier(data: Tier): Promise<boolean> {
 }
 
 export async function updateTierOrders(tiers: Tier[]): Promise<boolean> {
+	await requirePermission("tier:UPDATE");
 	try {
 		// Update each tier's order in a transaction
 		await prisma.$transaction(
@@ -78,6 +83,14 @@ export async function updateTierOrders(tiers: Tier[]): Promise<boolean> {
 }
 
 export async function deleteTier(id: string): Promise<boolean> {
+	const session = await requirePermission("tier:DELETE");
+	const existing = await prisma.tier.findFirst({
+		where: { id, businessId: session.businessId },
+	});
+	if (!existing) {
+		throw new Error("Tier not found.");
+	}
+
 	await prisma.tier.delete({
 		where: { id },
 	});

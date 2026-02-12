@@ -3,17 +3,18 @@
 import { prisma } from "@/lib/prisma";
 import { Position } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
-
-const STATIC_BUSINESS_ID = "a18dee1a-370c-42a1-b731-fbc1788c0815";
+import { requirePermission } from "@/lib/auth/rbac";
 
 export async function getPositions(): Promise<Position[]> {
+	const session = await requirePermission("position:READ");
 	return await prisma.position.findMany({
-		where: { businessId: STATIC_BUSINESS_ID },
+		where: { businessId: session.businessId },
 		orderBy: { order: "asc" },
 	});
 }
 
 export async function createPosition(data: Position): Promise<boolean> {
+	const session = await requirePermission("position:CREATE");
 	const { id, businessId, ...rest } = data;
 
 	try {
@@ -21,7 +22,7 @@ export async function createPosition(data: Position): Promise<boolean> {
 			data: {
 				...rest,
 				business: {
-					connect: { id: STATIC_BUSINESS_ID },
+					connect: { id: session.businessId },
 				},
 			},
 		});
@@ -34,17 +35,20 @@ export async function createPosition(data: Position): Promise<boolean> {
 }
 
 export async function updatePosition(data: Position): Promise<boolean> {
+	const session = await requirePermission("position:UPDATE");
 	const { id, businessId, ...rest } = data;
 
 	try {
+		const existing = await prisma.position.findFirst({
+			where: { id, businessId: session.businessId },
+		});
+		if (!existing) {
+			throw new Error("Position not found.");
+		}
+
 		const updatedPosition = await prisma.position.update({
 			where: { id },
-			data: {
-				...rest,
-				business: {
-					connect: { id: businessId },
-				},
-			},
+			data: { ...rest },
 		});
 		revalidatePath("/business");
 		return !!updatedPosition;
@@ -55,6 +59,7 @@ export async function updatePosition(data: Position): Promise<boolean> {
 }
 
 export async function updatePositionOrders(positions: Position[]): Promise<boolean> {
+	await requirePermission("position:UPDATE");
 	try {
 		await prisma.$transaction(
 			positions.map((position, index) =>
@@ -73,6 +78,14 @@ export async function updatePositionOrders(positions: Position[]): Promise<boole
 }
 
 export async function deletePosition(id: string): Promise<boolean> {
+	const session = await requirePermission("position:DELETE");
+	const existing = await prisma.position.findFirst({
+		where: { id, businessId: session.businessId },
+	});
+	if (!existing) {
+		throw new Error("Position not found.");
+	}
+
 	await prisma.position.delete({
 		where: { id },
 	});
@@ -80,4 +93,3 @@ export async function deletePosition(id: string): Promise<boolean> {
 	revalidatePath("/business");
 	return true;
 }
-

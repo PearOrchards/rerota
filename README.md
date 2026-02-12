@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/_page.tsx`. The page auto-updat
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Auth Environment
+
+Set these environment variables before running locally:
+
+```bash
+DATABASE_URL=postgresql://...
+JWT_ENC_KEY= # 32-byte base64url or hex key for JWE
+APP_URL=http://localhost:3000
+
+# Optionally...
+AUTH_ACCESS_TTL_MINUTES=15
+AUTH_REFRESH_TTL_DAYS=30
+AUTH_MAGIC_LINK_TTL_MINUTES=15
+AUTH_COOKIE_DOMAIN=
+```
+
+Adjust `requiredRoleForPath` in `lib/auth/rbac.ts` as new sections are added.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
