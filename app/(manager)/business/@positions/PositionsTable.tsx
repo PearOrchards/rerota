@@ -6,6 +6,7 @@ import { Position } from "@/generated/prisma/client";
 import { updatePositionOrders } from "@/lib/actions/positions";
 import { useOptimistic } from "react";
 import { Actions } from "./Actions";
+import { toast } from "sonner";
 
 const columns: ColumnDef<Position>[] = [
 	{
@@ -27,9 +28,11 @@ export function PositionsTable({ positions }: { positions: Position[] }) {
 
 	const handleReorder = async (reorderedPositions: Position[]) => {
 		setOptimisticPositions(reorderedPositions);
-		await updatePositionOrders(reorderedPositions);
+		const response = await updatePositionOrders(reorderedPositions);
+		if (!response.success) {
+			toast.error(response.message || "Failed to update position order.");
+		}
 	};
 
 	return <DraggableDataTable data={optimisticPositions} columns={columns} onReorder={handleReorder} />;
 }
-

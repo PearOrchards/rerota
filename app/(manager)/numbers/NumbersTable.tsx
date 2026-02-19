@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { NumberMatrixTableData } from "@/lib/types/number-matrix";
 import { updateNumberMatrixEntries } from "@/lib/actions/number-matrix";
+import { toast } from "sonner";
 
 type ClientRow = {
 	tierId: string;
@@ -122,7 +123,14 @@ export default function NumbersTable({ categories, rows }: NumberMatrixTableData
 					time: Number.parseInt(row.values[category.id] ?? "0", 10) || 0,
 				})),
 			);
-			await updateNumberMatrixEntries(payload);
+			const response = await updateNumberMatrixEntries(payload);
+			if (response.success) {
+				toast.success(response.message || "Saved.");
+			} else {
+				toast.error(response.message || "Failed to save.");
+			}
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to save.");
 		} finally {
 			setIsSaving(false);
 		}

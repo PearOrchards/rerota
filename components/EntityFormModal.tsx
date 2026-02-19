@@ -11,6 +11,8 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { ModifyResponse } from "@/lib/types/common";
 
 export interface EntityFormModalProps<T> {
 	entity?: T;
@@ -18,7 +20,7 @@ export interface EntityFormModalProps<T> {
 	title: string;
 	description?: string;
 	children: (entity: T | undefined, onChange: (field: keyof T, value: unknown) => void) => ReactNode;
-	onSubmit: (entity: T) => Promise<boolean>;
+	onSubmit: (entity: T) => Promise<ModifyResponse>;
 	getDefaultValues: () => T;
 	onSuccess?: () => void;
 }
@@ -70,11 +72,13 @@ export function EntityFormModal<T extends Record<string, unknown>>({
 
 		startTransition(async () => {
 			try {
-				const success = await onSubmit(formData);
-				if (success) {
+				const response = await onSubmit(formData);
+				if (response.success) {
 					setOpen(false);
+					toast.success(response.message || "Completed action successfully.");
 					onSuccess?.();
 				} else {
+					toast.error(response.message || "Failed to complete action.");
 					setError("Failed to save. Please try again.");
 				}
 			} catch (err) {

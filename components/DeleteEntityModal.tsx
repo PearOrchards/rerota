@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
 	Dialog,
 	DialogContent,
@@ -10,12 +11,13 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import type { ModifyResponse } from "@/lib/types/common";
 
 interface DeleteEntityModalProps {
     title: string;
     description?: string;
     trigger: React.ReactNode;
-    onConfirm: () => Promise<unknown>;
+    onConfirm: () => Promise<ModifyResponse>;
 }
 
 /**
@@ -40,11 +42,16 @@ export function DeleteEntityModal({
 
 		startTransition(async () => {
 			try {
-				await onConfirm();
-				setOpen(false);
+				const response = await onConfirm();
+				if (response.success) {
+					setOpen(false);
+					toast.success(response.message || "Deleted successfully.");
+				} else {
+					toast.error(response.message || "Failed to delete.");
+				}
 			} catch (error) {
 				console.error("Error deleting entity:", error);
-				// Use sonner or similar to show error toast
+				toast.error(error instanceof Error ? error.message : "Failed to delete.");
 			}
 		});
 	};

@@ -6,6 +6,7 @@ import { Tier } from "@/generated/prisma/client";
 import { updateTierOrders } from "@/lib/actions/tiers";
 import { useOptimistic } from "react";
 import { Actions } from "./Actions";
+import { toast } from "sonner";
 
 const columns: ColumnDef<Tier>[] = [
 	{
@@ -27,9 +28,11 @@ export function TiersTable({ tiers }: { tiers: Tier[] }) {
 
 	const handleReorder = async (reorderedTiers: Tier[]) => {
 		setOptimisticTiers(reorderedTiers);
-		await updateTierOrders(reorderedTiers);
+		const response = await updateTierOrders(reorderedTiers);
+		if (!response.success) {
+			toast.error(response.message || "Failed to update tier order.");
+		}
 	};
 
 	return <DraggableDataTable data={optimisticTiers} columns={columns} onReorder={handleReorder} />;
 }
-

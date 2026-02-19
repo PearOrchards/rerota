@@ -1,5 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { Toaster } from "@/components/ui/sonner";
 import { Figtree, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider as NextThemeProvider } from "next-themes";
 import type { Metadata } from "next";
@@ -40,6 +41,7 @@ export default function RootLayout({
 					<SidebarProvider>
 						<AppSidebar/>
 						{children}
+						<Toaster position="bottom-right" />
 					</SidebarProvider>
 				</ThemeProvider>
 			</body>

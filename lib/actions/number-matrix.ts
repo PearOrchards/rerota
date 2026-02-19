@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth/rbac";
 import type { NumberMatrixTableData } from "@/lib/types/number-matrix";
+import { ModifyResponse } from "@/lib/types/common";
+import { extractReadableErrorMessage } from "@/lib/utils";
 
 const categoryOrderByName: Record<string, number> = {
 	"Training Required": 1,
@@ -84,7 +86,7 @@ export type NumberMatrixInput = {
 	time: number;
 };
 
-export async function updateNumberMatrixEntries(entries: NumberMatrixInput[]): Promise<boolean> {
+export async function updateNumberMatrixEntries(entries: NumberMatrixInput[]): Promise<ModifyResponse> {
 	await requirePermission("numberMatrix:UPDATE");
 
 	// Check all numbers are positive
@@ -116,9 +118,15 @@ export async function updateNumberMatrixEntries(entries: NumberMatrixInput[]): P
 			),
 		);
 		revalidatePath("/numbers");
-		return true;
+		return {
+			success: true,
+			message: "Number matrix updated successfully.",
+		};
 	} catch (error) {
 		console.error("Error updating number matrix:", error);
-		return false;
+		return {
+			success: false,
+			message: extractReadableErrorMessage(error),
+		};
 	}
 }
