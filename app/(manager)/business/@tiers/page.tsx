@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 
 export default async function TiersSection() {
 	const tiers = await getTiers();
-	console.log(tiers);
 
 	return (
 		<div>

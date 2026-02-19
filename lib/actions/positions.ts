@@ -86,6 +86,10 @@ export async function deletePosition(id: string): Promise<boolean> {
 		throw new Error("Position not found.");
 	}
 
+	await prisma.numberMatrix.deleteMany({
+		where: { positionId: id },
+	});
+
 	await prisma.position.delete({
 		where: { id },
 	});
