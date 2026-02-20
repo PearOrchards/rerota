@@ -11,6 +11,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { ModifyResponse } from "@/lib/types/common";
 
 interface DeleteEntityModalProps {
@@ -68,21 +69,21 @@ export function DeleteEntityModal({
 						{description && <DialogDescription>{description}</DialogDescription>}
 					</DialogHeader>
 					<DialogFooter className="pt-4">
-						<button
+						<Button
 							type="button"
-							className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded mr-2"
+							variant="outline"
 							onClick={() => setOpen(false)}
 							disabled={isPending}
 						>
-                            Cancel
-						</button>
-						<button
+							Cancel
+						</Button>
+						<Button
 							type="submit"
-							className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+							variant="destructive"
 							disabled={isPending}
 						>
 							{isPending ? "Deleting..." : "Delete"}
-						</button>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

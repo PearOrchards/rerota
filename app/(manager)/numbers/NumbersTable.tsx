@@ -18,10 +18,10 @@ type ClientRow = {
 };
 
 const columnLabelByCategoryName: Record<string, string> = {
-	"Training Required": "Duration of",
-	"Training Break until Lost": "until Expiry",
-	"Competency Break until Lost": "until Expiry",
-	"Competency until Trainer": "to be Trainer",
+	"Training Required": "Duration of ...",
+	"Training Break until Lost": "... gap until Expiry",
+	"Competency Break until Lost": "... gap until Expiry",
+	"Competency until Trainer": "... to be Trainer",
 };
 
 const unitByCategoryName: Record<string, string> = {
@@ -141,6 +141,11 @@ export default function NumbersTable({ categories, rows }: NumberMatrixTableData
 			<div className="overflow-hidden rounded-lg border shadow-lg w-full h-full *:h-full">
 				<Table className="text-lg h-full">
 					<TableHeader>
+						<TableRow>
+							<TableHead colSpan={2}>Ride</TableHead>
+							<TableHead colSpan={2}>Training</TableHead>
+							<TableHead colSpan={2}>Competency</TableHead>
+						</TableRow>
 						{table.getHeaderGroups().map(group => (
 							<TableRow key={group.id}>
 								{group.headers.map(header => (
