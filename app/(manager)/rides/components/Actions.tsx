@@ -1,7 +1,7 @@
 import { Copy, Ellipsis, Pencil, Trash } from "lucide-react";
 import { deleteRide } from "@/lib/actions/rides";
-import type { RideWithExtra } from "@/lib/types/rides";
-import { Tier } from "@/generated/prisma/client";
+import type { RideFormData, RideWithExtra } from "@/lib/types/rides";
+import { Position, Tier } from "@/generated/prisma/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { RideFormModal } from "./RideFormModal";
 import { DeleteEntityModal } from "@/components/DeleteEntityModal";
@@ -9,13 +9,22 @@ import { DeleteEntityModal } from "@/components/DeleteEntityModal";
 export function Actions({
 	ride,
 	tiers,
+	positions,
 	businessId,
 }: {
-    ride: RideWithExtra;
-    tiers: Tier[];
-    businessId: string;
+	ride: RideWithExtra;
+	tiers: Tier[];
+	positions: Position[];
+	businessId: string;
 }) {
-	const { competenciesCount, ...rest } = ride; // Exclude competenciesCount when passing ride data
+	const rideForForm: RideFormData = {
+		id: ride.id,
+		name: ride.name,
+		description: ride.description ?? "",
+		tierId: ride.tierId,
+		businessId: ride.businessId,
+		positionIds: ride.positions.map((position) => position.id),
+	};
 
 	return (
 		<DropdownMenu>
@@ -24,13 +33,14 @@ export function Actions({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="center" side="left">
 				<RideFormModal
-					ride={rest}
+					ride={rideForForm}
 					trigger={
 						<DropdownMenuItem onSelect={(e) => e.preventDefault()} className="hover:cursor-pointer">
 							<Pencil /> Edit
 						</DropdownMenuItem>
 					}
 					availableTiers={tiers}
+					availablePositions={positions}
 					businessId={businessId}
 				/>
 				<DropdownMenuItem className="hover:cursor-pointer"><Copy /> Duplicate</DropdownMenuItem>

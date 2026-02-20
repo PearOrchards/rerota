@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/DataTable";
-import { Tier } from "@/generated/prisma/client";
+import { Position, Tier } from "@/generated/prisma/client";
 import type { RideWithExtra } from "@/lib/types/rides";
 
 import { Actions } from "./Actions";
@@ -10,11 +10,13 @@ import { Actions } from "./Actions";
 interface TableProps {
 	data: RideWithExtra[];
 	tiers: Tier[];
+	positions: Position[];
 	businessId: string;
 }
 
 const createColumns = (
 	tiers: Tier[],
+	positions: Position[],
 	businessId: string,
 ): ColumnDef<RideWithExtra>[] => [
 	{
@@ -33,6 +35,15 @@ const createColumns = (
 		header: "Tier",
 	},
 	{
+		id: "roles",
+		header: "Roles",
+		cell: ({ row }) => (
+			<span className="truncate">
+				{row.original.positions.map((position) => position.name).join(", ")}
+			</span>
+		),
+	},
+	{
 		accessorKey: "competenciesCount",
 		header: "Competencies",
 	},
@@ -40,14 +51,19 @@ const createColumns = (
 		id: "actions",
 		header: "",
 		cell: ({ row }) => (
-			<Actions ride={row.original} tiers={tiers} businessId={businessId} />
+			<Actions
+				ride={row.original}
+				tiers={tiers}
+				positions={positions}
+				businessId={businessId}
+			/>
 		),
 	},
 ];
 
 
-export function Table({ data: rides, tiers, businessId }: TableProps) {
-	const columns = createColumns(tiers, businessId);
+export function Table({ data: rides, tiers, positions, businessId }: TableProps) {
+	const columns = createColumns(tiers, positions, businessId);
 
 	return (
 		<div className="space-y-4 w-full">

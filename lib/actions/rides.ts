@@ -1,8 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { RideWithExtra } from "@/lib/types/rides";
-import { Ride } from "@/generated/prisma/client";
+import type { RideFormData, RideWithExtra } from "@/lib/types/rides";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ModifyResponse } from "@/lib/types/common";
@@ -16,6 +15,11 @@ export async function getRides(): Promise<RideWithExtra[]> {
 		},
 		include: {
 			tier: true,
+			positions: {
+				orderBy: {
+					order: "asc",
+				},
+			},
 		},
 	});
 
@@ -32,18 +36,44 @@ export async function getRides(): Promise<RideWithExtra[]> {
 	) as RideWithExtra[];
 }
 
-export async function createRide(data: Ride): Promise<ModifyResponse> {
-	// validation
+export async function createRide(data: RideFormData): Promise<ModifyResponse> {
 	const session = await requirePermission("ride:CREATE");
-	const { tierId, name, description } = data;
+	const { tierId, name, description, positionIds } = data;
+	const uniquePositionIds = [...new Set(positionIds)];
 
 	try {
+		if (!uniquePositionIds.length) {
+			throw new Error("Select at least one role for this ride.");
+		}
+
+		const tier = await prisma.tier.findFirst({
+			where: { id: tierId, businessId: session.businessId },
+			select: { id: true },
+		});
+		if (!tier) {
+			throw new Error("Selected tier is not available for this business.");
+		}
+
+		const positions = await prisma.position.findMany({
+			where: {
+				id: { in: uniquePositionIds },
+				businessId: session.businessId,
+			},
+			select: { id: true },
+		});
+		if (positions.length !== uniquePositionIds.length) {
+			throw new Error("One or more selected roles are invalid.");
+		}
+
 		const newRide = await prisma.ride.create({
 			data: {
 				name,
-				description,
+				description: description || null,
 				tier: {
 					connect: { id: tierId },
+				},
+				positions: {
+					connect: positions.map((position) => ({ id: position.id })),
 				},
 				business: {
 					connect: { id: session.businessId },
@@ -64,13 +94,16 @@ export async function createRide(data: Ride): Promise<ModifyResponse> {
 	}
 }
 
-export async function updateRide(data: Ride): Promise<ModifyResponse> {
+export async function updateRide(data: RideFormData): Promise<ModifyResponse> {
 	const session = await requirePermission("ride:UPDATE");
-	const { id, tierId, name, description } = data;
-
-	// validation
+	const { id, tierId, name, description, positionIds } = data;
+	const uniquePositionIds = [...new Set(positionIds)];
 
 	try {
+		if (!uniquePositionIds.length) {
+			throw new Error("Select at least one role for this ride.");
+		}
+
 		const existing = await prisma.ride.findFirst({
 			where: { id, businessId: session.businessId },
 		});
@@ -78,13 +111,35 @@ export async function updateRide(data: Ride): Promise<ModifyResponse> {
 			throw new Error("Ride not found.");
 		}
 
+		const tier = await prisma.tier.findFirst({
+			where: { id: tierId, businessId: session.businessId },
+			select: { id: true },
+		});
+		if (!tier) {
+			throw new Error("Selected tier is not available for this business.");
+		}
+
+		const positions = await prisma.position.findMany({
+			where: {
+				id: { in: uniquePositionIds },
+				businessId: session.businessId,
+			},
+			select: { id: true },
+		});
+		if (positions.length !== uniquePositionIds.length) {
+			throw new Error("One or more selected roles are invalid.");
+		}
+
 		const updatedRide = await prisma.ride.update({
 			where: { id },
 			data: {
 				name,
-				description,
+				description: description || null,
 				tier: {
 					connect: { id: tierId },
+				},
+				positions: {
+					set: positions.map((position) => ({ id: position.id })),
 				},
 				business: {
 					connect: { id: session.businessId },
