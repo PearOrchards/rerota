@@ -23,7 +23,10 @@ export function Actions({
 		description: ride.description ?? "",
 		tierId: ride.tierId,
 		businessId: ride.businessId,
-		positionIds: ride.positions.map((position) => position.id),
+		positionQuantities: ride.ridePositions.map((ridePosition) => ({
+			positionId: ridePosition.positionId,
+			quantity: ridePosition.quantity,
+		})),
 	};
 
 	return (

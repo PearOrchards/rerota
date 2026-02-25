@@ -39,7 +39,13 @@ const createColumns = (
 		header: "Roles",
 		cell: ({ row }) => (
 			<span className="truncate">
-				{row.original.positions.map((position) => position.name).join(", ")}
+				{row.original.ridePositions
+					.map((ridePosition) => (
+						ridePosition.quantity > 1
+							? `${ridePosition.position.name} x${ridePosition.quantity}`
+							: ridePosition.position.name
+					))
+					.join(", ")}
 			</span>
 		),
 	},

@@ -5,10 +5,10 @@ import { EntityFormModal } from "@/components/EntityFormModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { createRide, updateRide } from "@/lib/actions/rides";
 import type { Position, Tier } from "@/generated/prisma/client";
 import { RideFormData } from "@/lib/types/rides";
+import { PositionQuantitySelect } from "./PositionQuantitySelect";
 
 interface RideFormModalProps {
 	ride?: RideFormData;
@@ -27,15 +27,13 @@ export function RideFormModal({
 	availablePositions,
 	businessId,
 }: RideFormModalProps) {
-	const allPositionIds = availablePositions.map((position) => position.id);
-
 	const getDefaultValues = (): RideFormData => ({
 		id: "",
 		name: "",
 		description: "",
 		tierId: availableTiers[0]?.id || "",
 		businessId,
-		positionIds: allPositionIds,
+		positionQuantities: [],
 	});
 
 	const handleSubmit = async (data: RideFormData) => {
@@ -47,7 +45,7 @@ export function RideFormModal({
 		? {
 			...ride,
 			businessId,
-			positionIds: ride.positionIds.length ? ride.positionIds : allPositionIds,
+			positionQuantities: ride.positionQuantities,
 		}
 		: undefined;
 	const positionOptions = availablePositions.map((position) => ({
@@ -107,10 +105,10 @@ export function RideFormModal({
 					</div>
 					<div className="grid gap-2">
 						<Label>Roles</Label>
-						<MultiSelect
+						<PositionQuantitySelect
 							options={positionOptions}
-							value={formData?.positionIds ?? []}
-							onValueChange={(value) => onChange("positionIds", value)}
+							value={formData?.positionQuantities ?? []}
+							onValueChange={(value) => onChange("positionQuantities", value)}
 							placeholder="Select roles"
 							emptyMessage="No roles available. Create positions first."
 						/>

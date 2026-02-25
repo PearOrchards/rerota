@@ -66,7 +66,7 @@ model Position {
   business       Business       @relation(fields: [businessId], references: [id])
   numberMatrixes NumberMatrix[]
   competencies   Competency[]
-  rides          Ride[]
+  ridePositions  RidePosition[]
 }
 
 model NumberMatrix {
@@ -91,7 +91,17 @@ model Ride {
   businessId   String
   business     Business     @relation(fields: [businessId], references: [id])
   competencies Competency[]
-  positions    Position[]
+  ridePositions RidePosition[]
+}
+
+model RidePosition {
+  rideId     String
+  ride       Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  positionId String
+  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  quantity   Int      @default(1)
+
+  @@id([rideId, positionId])
 }
 
 model Competency {

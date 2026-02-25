@@ -1,11 +1,26 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { RideFormData, RideWithExtra } from "@/lib/types/rides";
+import type { RideFormData, RidePositionQuantity, RideWithExtra } from "@/lib/types/rides";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ModifyResponse } from "@/lib/types/common";
 import { extractReadableErrorMessage } from "@/lib/utils";
+
+function normalizeRoleQuantities(roleQuantities: RidePositionQuantity[]): RidePositionQuantity[] {
+	const normalizedByPositionId = new Map<string, number>();
+
+	for (const roleQuantity of roleQuantities) {
+		const positionId = roleQuantity.positionId;
+		const quantity = Math.max(0, Math.floor(Number(roleQuantity.quantity) || 0));
+		if (!positionId || !quantity) {
+			continue;
+		}
+		normalizedByPositionId.set(positionId, quantity);
+	}
+
+	return Array.from(normalizedByPositionId, ([positionId, quantity]) => ({ positionId, quantity }));
+}
 
 export async function getRides(): Promise<RideWithExtra[]> {
 	const session = await requirePermission("ride:READ");
@@ -15,9 +30,14 @@ export async function getRides(): Promise<RideWithExtra[]> {
 		},
 		include: {
 			tier: true,
-			positions: {
+			ridePositions: {
+				include: {
+					position: true,
+				},
 				orderBy: {
-					order: "asc",
+					position: {
+						order: "asc",
+					},
 				},
 			},
 		},
@@ -33,16 +53,17 @@ export async function getRides(): Promise<RideWithExtra[]> {
 				competenciesCount,
 			};
 		}),
-	) as RideWithExtra[];
+	);
 }
 
 export async function createRide(data: RideFormData): Promise<ModifyResponse> {
 	const session = await requirePermission("ride:CREATE");
-	const { tierId, name, description, positionIds } = data;
-	const uniquePositionIds = [...new Set(positionIds)];
+	const { tierId, name, description, positionQuantities } = data;
+	const normalizedRoleQuantities = normalizeRoleQuantities(positionQuantities);
+	const uniquePositionIds = normalizedRoleQuantities.map((roleQuantity) => roleQuantity.positionId);
 
 	try {
-		if (!uniquePositionIds.length) {
+		if (!normalizedRoleQuantities || normalizedRoleQuantities.length < 1) {
 			throw new Error("Select at least one role for this ride.");
 		}
 
@@ -72,8 +93,11 @@ export async function createRide(data: RideFormData): Promise<ModifyResponse> {
 				tier: {
 					connect: { id: tierId },
 				},
-				positions: {
-					connect: positions.map((position) => ({ id: position.id })),
+				ridePositions: {
+					create: normalizedRoleQuantities.map(({ positionId, quantity }) => ({
+						positionId,
+						quantity,
+					})),
 				},
 				business: {
 					connect: { id: session.businessId },
@@ -96,11 +120,12 @@ export async function createRide(data: RideFormData): Promise<ModifyResponse> {
 
 export async function updateRide(data: RideFormData): Promise<ModifyResponse> {
 	const session = await requirePermission("ride:UPDATE");
-	const { id, tierId, name, description, positionIds } = data;
-	const uniquePositionIds = [...new Set(positionIds)];
+	const { id, tierId, name, description, positionQuantities } = data;
+	const normalizedRoleQuantities = normalizeRoleQuantities(positionQuantities);
+	const uniquePositionIds = normalizedRoleQuantities.map((roleQuantity) => roleQuantity.positionId);
 
 	try {
-		if (!uniquePositionIds.length) {
+		if (!normalizedRoleQuantities || normalizedRoleQuantities.length < 1) {
 			throw new Error("Select at least one role for this ride.");
 		}
 
@@ -138,8 +163,12 @@ export async function updateRide(data: RideFormData): Promise<ModifyResponse> {
 				tier: {
 					connect: { id: tierId },
 				},
-				positions: {
-					set: positions.map((position) => ({ id: position.id })),
+				ridePositions: {
+					deleteMany: {},
+					create: normalizedRoleQuantities.map((roleQuantity) => ({
+						positionId: roleQuantity.positionId,
+						quantity: roleQuantity.quantity,
+					})),
 				},
 				business: {
 					connect: { id: session.businessId },

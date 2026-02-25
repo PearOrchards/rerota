@@ -683,15 +683,22 @@ async function main() {
 			update: {
 				...rideData,
 				businessId: bis.id,
-				positions: {
-					set: positionIds.map(id => ({ id })),
+				ridePositions: {
+					deleteMany: {},
+					create: positionIds.map(id => ({
+						positionId: id,
+						quantity: 1,
+					})),
 				},
 			},
 			create: {
 				...rideData,
 				businessId: bis.id,
-				positions: {
-					connect: positionIds.map(id => ({ id })),
+				ridePositions: {
+					create: positionIds.map(id => ({
+						positionId: id,
+						quantity: 1,
+					})),
 				},
 			},
 		});
