@@ -13,6 +13,7 @@ import {
 	LucideBriefcaseBusiness,
 	Users,
 	RollerCoaster,
+	GraduationCap,
 	Settings,
 	CircleUser,
 	ChevronRight,
@@ -38,6 +39,11 @@ const managerItems = [
 	{
 		header: "Manage",
 		sections: [
+			{
+				title: "Competencies",
+				url: "/competencies",
+				icon: GraduationCap,
+			},
 			{
 				title: "Staff",
 				url: "/staff",
