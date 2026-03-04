@@ -14,8 +14,17 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            # Load nvm
+            export NVM_DIR="~/.nvm"
+            source ~/.nvm/nvm.sh
             cd rerota
-            nvm use .
+            nvm install 24
+            nvm use 24
+            # Add the Node 24 binary to the PATH to ensure all commands use the correct version.
+            export PATH="$(dirname $(nvm which 24)):$PATH"
+            
+            pm2 stop rerota || true
+            rm -r node_modules
             git pull origin main
             # Cannot omit dev as next build fails
             npm ci
