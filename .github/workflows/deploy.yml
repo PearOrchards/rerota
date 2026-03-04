@@ -15,8 +15,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd rerota
+            nvm use .
             git pull origin main
-            npm ci --production
+            # Cannot omit dev as next build fails
+            npm ci
             npx prisma migrate deploy
             npx prisma generate
             npx next build
