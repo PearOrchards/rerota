@@ -1,34 +1,30 @@
-name: Deploy
+name: Build and Push Docker Image
 on:
   push:
     branches:
       - main
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Run deployment commands via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            # Load nvm
-            export NVM_DIR="~/.nvm"
-            source ~/.nvm/nvm.sh
-            cd rerota
-            nvm install 24
-            nvm use 24
-            # Add the Node 24 binary to the PATH to ensure all commands use the correct version.
-            export PATH="$(dirname $(nvm which 24)):$PATH"
-            
-            pm2 stop rerota || true
-            rm -r node_modules
-            git pull origin main
-            # Cannot omit dev as next build fails
-            npm ci
-            npx prisma migrate deploy
-            npx prisma generate
-            npx next build
-            pm2 restart rerota
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/pearorchards/rerota:latest
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
