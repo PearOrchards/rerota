@@ -28,3 +28,19 @@ jobs:
           tags: ghcr.io/pearorchards/rerota:latest
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
+
+      - name: Deploy the New Container
+        run: |
+          # Stop and remove the old container (don't fail if it doesn't exist yet)
+          docker rm -f rerota-app || true
+          
+          # Run the freshly built image
+          docker run -d \
+            --name rerota-app \
+            --restart unless-stopped \
+            -p 5002:5002 \
+            --env-file /home/pear/rerota/.env \
+            ghcr.io/pearorchards/rerota:latest
+          
+          # Clean up old dangling images so your server's hard drive doesn't fill up
+          docker image prune -f
