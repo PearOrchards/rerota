@@ -8,5 +8,3 @@ export async function GET() {
 	}
 	return NextResponse.json({ ok: true, session });
 }
-
-export const dynamic = "force-dynamic";

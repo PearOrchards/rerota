@@ -4,6 +4,8 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache openssl libc6-compat
 COPY . .
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV JWT_ENC_KEY="7f0954fadf6a7e8d1a690b87ebf818cc87857bbc68e3a86d30c333fe2361b0fe"
 RUN npm ci && npx prisma generate && npm run build
 
 # Run lean app

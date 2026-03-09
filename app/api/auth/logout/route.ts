@@ -23,5 +23,3 @@ export async function POST() {
 	clearAuthCookies(response);
 	return response;
 }
-
-export const dynamic = "force-dynamic";

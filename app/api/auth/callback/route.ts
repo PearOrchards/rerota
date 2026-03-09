@@ -21,5 +21,3 @@ export async function GET(request: Request) {
 	setAuthCookies(response, accessToken, refreshToken);
 	return response;
 }
-
-export const dynamic = "force-dynamic";
