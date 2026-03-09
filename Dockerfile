@@ -12,10 +12,12 @@ RUN npm ci && npx prisma generate && npm run build
 FROM node:24-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh
