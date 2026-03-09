@@ -38,7 +38,7 @@ jobs:
           docker run -d \
             --name rerota-app \
             --restart unless-stopped \
-            -p 5002:5002 \
+            -p 5002:3000 \
             --env-file /home/pear/rerota/.env \
             ghcr.io/pearorchards/rerota:latest
           
