@@ -23,6 +23,7 @@ model Business {
   categories   Category[]
   tiers        Tier[]
   positions    Position[]
+  rotas        Rota[]
 }
 
 model StaffMember {
@@ -35,6 +36,7 @@ model StaffMember {
   updatedAt    DateTime     @updatedAt
   competencies Competency[]
   identity     Identity?
+  rotaDetails  RotaDetail[]
 }
 
 model Category {
@@ -67,6 +69,7 @@ model Position {
   numberMatrixes NumberMatrix[]
   competencies   Competency[]
   ridePositions  RidePosition[]
+  rotaDetails    RotaDetail[]
 }
 
 model NumberMatrix {
@@ -88,10 +91,11 @@ model Ride {
   tierId      String
   tier        Tier    @relation(fields: [tierId], references: [id])
 
-  businessId   String
-  business     Business     @relation(fields: [businessId], references: [id])
-  competencies Competency[]
+  businessId    String
+  business      Business       @relation(fields: [businessId], references: [id])
+  competencies  Competency[]
   ridePositions RidePosition[]
+  rotaDetails   RotaDetail[]
 }
 
 model RidePosition {
@@ -176,4 +180,35 @@ model RefreshToken {
   rotatedFromId String?       @unique
   rotatedFrom   RefreshToken? @relation("RefreshTokenRotation", fields: [rotatedFromId], references: [id])
   rotatedTo     RefreshToken? @relation("RefreshTokenRotation")
+}
+
+enum RotaStatus {
+  DRAFT
+  READY
+  ACTIVE
+  ARCHIVED
+}
+
+model Rota {
+  id             String       @id @default(uuid())
+  businessId     String
+  business       Business     @relation(fields: [businessId], references: [id])
+  applicableDate DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  status         RotaStatus
+  details        RotaDetail[]
+}
+
+model RotaDetail {
+  staffMemberId String
+  staffMember   StaffMember @relation(fields: [staffMemberId], references: [id])
+  parentRotaId  String
+  parentRota    Rota        @relation(fields: [parentRotaId], references: [id], onDelete: Cascade)
+  rideId        String
+  ride          Ride        @relation(fields: [rideId], references: [id])
+  positionId    String
+  position      Position    @relation(fields: [positionId], references: [id])
+
+  @@id([staffMemberId, parentRotaId, rideId, positionId])
 }
