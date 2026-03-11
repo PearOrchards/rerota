@@ -1,5 +1,8 @@
 import { requireSession } from "@/lib/auth/session";
 import { getToday } from "@/lib/actions/rotas";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default async function RotasPage() {
 	const session = await requireSession();
@@ -16,12 +19,31 @@ export default async function RotasPage() {
 				</div>
 			</div>
 
-			<div className="flex py-4">
+			<div className="flex flex-col py-6">
 				{ todaysRota ? (
-					<p>Seems like a rota is in progress!</p>
+					<div className="bg-green-100 text-green-800 px-4 py-2 rounded-md">
+						Seems like a rota is in progress!
+					</div>
 				) : (
-					<p>No rota made yet.</p>
+
+					<div className="bg-zinc-700 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
+						<div>
+							<h2 className="font-semibold text-2xl">NO ROTA TODAY</h2>
+							<p className="italic">Click on the arrow on the right to start.</p>
+						</div>
+						<div>
+							<Link href={"/rotas/modify"} className="flex">
+								<Button variant="link" className="hover:cursor-pointer">
+									<ArrowRight className="size-8" />
+								</Button>
+							</Link>
+						</div>
+					</div>
 				)}
+			</div>
+
+			<div className="flex flex-col py-4">
+				<h2 className="mb-2 font-semibold text-xl">History:</h2>
 			</div>
 		</main>
 	);
