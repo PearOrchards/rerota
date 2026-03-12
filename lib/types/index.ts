@@ -2,6 +2,6 @@
 
 export * from "./common";
 export * from "./competency";
-export * from "./number-matrix";
+export * from "./numberMatrix";
 export * from "./rides";
 export * from "./staffMember";

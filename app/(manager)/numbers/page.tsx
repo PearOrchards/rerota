@@ -1,5 +1,5 @@
 import NumbersTable from "@/app/(manager)/numbers/NumbersTable";
-import { getNumberMatrixData } from "@/lib/actions/number-matrix";
+import { getNumberMatrixData } from "@/lib/actions/numberMatrix";
 
 export default async function NumbersPage() {
 	const data = await getNumberMatrixData();

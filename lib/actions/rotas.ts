@@ -80,6 +80,35 @@ export async function getToday(): Promise<TodayRota | null> {
 	});
 }
 
+export async function getPreviousRotas(): Promise<TodayRota[]> {
+	const session = await requireSession();
+	const { start } = getTodayBounds();
+
+	return await prisma.rota.findMany({
+		where: {
+			businessId: session.businessId,
+			applicableDate: {
+				lt: start,
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+		select: {
+			id: true,
+			status: true,
+			applicableDate: true,
+			details: {
+				select: {
+					staffMemberId: true,
+					rideId: true,
+					positionId: true,
+				},
+			},
+		},
+	});
+}
+
 export async function saveTodayRota(entries: RotaAssignmentInput[]): Promise<ModifyResponse> {
 	const session = await requireRotaAccess();
 
