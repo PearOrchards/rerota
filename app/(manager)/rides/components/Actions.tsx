@@ -4,7 +4,7 @@ import type { RideFormData, RideWithExtra } from "@/lib/types/rides";
 import { Position, Tier } from "@/generated/prisma/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { RideFormModal } from "./RideFormModal";
-import { DeleteEntityModal } from "@/components/DeleteEntityModal";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 
 export function Actions({
 	ride,
@@ -47,7 +47,7 @@ export function Actions({
 					businessId={businessId}
 				/>
 				<DropdownMenuItem className="hover:cursor-pointer"><Copy /> Duplicate</DropdownMenuItem>
-				<DeleteEntityModal
+				<ConfirmEntityModal
 					title="Delete Ride"
 					description="Are you sure you want to delete this ride? This action cannot be undone."
 					trigger={

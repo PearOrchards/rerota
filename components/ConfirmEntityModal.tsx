@@ -14,27 +14,30 @@ import {
 import { Button } from "@/components/ui/button";
 import type { ModifyResponse } from "@/lib/types/common";
 
-interface DeleteEntityModalProps {
+interface ConfirmEntityModalProps {
     title: string;
     description?: string;
     trigger: React.ReactNode;
     onConfirm: () => Promise<ModifyResponse>;
+	buttonText?: string;
 }
 
 /**
- * Generic confirmation modal for deleting entities.
+ * Generic confirmation modal for doing something (usually deleting an entity)
  * @param title - Modal title (e.g., "Delete Ride")
  * @param description - Modal description (e.g., "Are you sure you want to delete this ride? This action cannot be undone.")
  * @param trigger - ReactNode which triggers modal open (button, menu item, etc)
  * @param onConfirm - Function called when user confirms deletion
+ * @param buttonText - Text to show on confirm button (default: "Delete")
  * @constructor
  */
-export function DeleteEntityModal({
+export function ConfirmEntityModal({
 	title,
 	description,
 	trigger,
 	onConfirm,
-}: DeleteEntityModalProps) {
+	buttonText = "Delete",
+}: ConfirmEntityModalProps) {
 	const [open, setOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
 
@@ -46,13 +49,13 @@ export function DeleteEntityModal({
 				const response = await onConfirm();
 				if (response.success) {
 					setOpen(false);
-					toast.success(response.message || "Deleted successfully.");
+					toast.success(response.message || "Action completed successfully.");
 				} else {
-					toast.error(response.message || "Failed to delete.");
+					toast.error(response.message || "Failed to perform action.");
 				}
 			} catch (error) {
-				console.error("Error deleting entity:", error);
-				toast.error(error instanceof Error ? error.message : "Failed to delete.");
+				console.error("Error confirming this action:", error);
+				toast.error(error instanceof Error ? error.message : "Failed to perform action.");
 			}
 		});
 	};
@@ -82,7 +85,7 @@ export function DeleteEntityModal({
 							variant="destructive"
 							disabled={isPending}
 						>
-							{isPending ? "Deleting..." : "Delete"}
+							{isPending ? "Working..." : buttonText}
 						</Button>
 					</DialogFooter>
 				</form>

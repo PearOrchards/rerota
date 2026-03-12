@@ -22,7 +22,7 @@ import type {
 	StaffMemberWithCompetencies,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 
 type AssignmentMap = Record<string, string[]>;
 
@@ -267,29 +267,20 @@ export default function RotaTable({
 	// When saving, we need to transform the assignments map back into the format expected by the API, which is an array of { staffMemberId, rideId, positionId }.
 	const handleSave = async () => {
 		setIsSaving(true);
-		try {
-			const payload = Object.entries(assignments).flatMap(
-				([cellId, staffIds]) => {
-					const [rideId, positionId] = cellId.split(":");
-					return staffIds.map((staffMemberId) => ({
-						staffMemberId,
-						rideId,
-						positionId,
-					}));
-				},
-			);
+		const payload = Object.entries(assignments).flatMap(
+			([cellId, staffIds]) => {
+				const [rideId, positionId] = cellId.split(":");
+				return staffIds.map((staffMemberId) => ({
+					staffMemberId,
+					rideId,
+					positionId,
+				}));
+			},
+		);
 
-			const response = await saveTodayRota(payload);
-			if (response.success) {
-				toast.success(response.message || "Saved.");
-			} else {
-				toast.error(response.message || "Failed to save.");
-			}
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to save.");
-		} finally {
-			setIsSaving(false);
-		}
+		const res = await saveTodayRota(payload);
+		setIsSaving(false);
+		return res;
 	};
 
 	// Following two returns just handle cases where no rides or positions exist.
@@ -363,14 +354,14 @@ export default function RotaTable({
 												key={`${ride.id}-${position.id}`}
 												className="bg-zinc-950/20 text-zinc-400"
 											>
-                        N/A
+                                                N/A
 											</TableCell>
 										);
 									}
 
 									const cellId = getRidePositionKey(ride.id, position.id);
 									const competentStaffIds =
-                    competentStaffIdsByRidePosition.get(cellId) ?? [];
+                                        competentStaffIdsByRidePosition.get(cellId) ?? [];
 
 									// The cell which has all the logic for selecting staff members... the props.......
 									return (
@@ -399,9 +390,17 @@ export default function RotaTable({
 			</div>
 
 			<div className="flex justify-end">
-				<Button onClick={handleSave} disabled={isSaving}>
-					{isSaving ? "Saving..." : "Save Rota"}
-				</Button>
+				<ConfirmEntityModal
+					title="Are you sure?"
+					description="If you continue now, any remaining slots will be filled automatically."
+					trigger={
+						<Button onClick={handleSave} disabled={isSaving}>
+							{isSaving ? "Saving..." : "Continue"}
+						</Button>
+					}
+					onConfirm={handleSave}
+					buttonText="Yes, continue"
+				/>
 			</div>
 		</div>
 	);

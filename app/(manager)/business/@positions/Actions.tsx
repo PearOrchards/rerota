@@ -3,7 +3,7 @@ import { PositionFormModal } from "@/app/(manager)/business/@positions/PositionF
 import { Button } from "@/components/ui/button";
 
 import { Position } from "@/generated/prisma/client";
-import { DeleteEntityModal } from "@/components/DeleteEntityModal";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 import { deletePosition } from "@/lib/actions/positions";
 
 interface ActionsProps {
@@ -23,7 +23,7 @@ export function Actions({
 				}
 				position={position}
 			/>
-			<DeleteEntityModal
+			<ConfirmEntityModal
 				title={"Delete Position"}
 				trigger={
 					<Button variant="ghost" size="icon">
