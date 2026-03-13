@@ -8,27 +8,8 @@ import { Suspense } from "react";
 import { History } from "./History";
 import { Spinner } from "@/components/ui/spinner";
 
-type State = RotaStatus | "NONE";
-
-function TodayRotaBox({ rotaStatus }: { rotaStatus: State }) {
+function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 	switch (rotaStatus) {
-		case "NONE":
-			return (
-				<div className="bg-zinc-700 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
-					<div>
-						<h2 className="font-semibold text-2xl">NO ROTA TODAY</h2>
-						<p className="italic">Click on the arrow on the right to <b>start</b>.</p>
-					</div>
-					<div>
-						<Link href={"/rotas/modify"} className="flex">
-							<Button variant="link" className="hover:cursor-pointer">
-								<ArrowRight className="size-8" />
-							</Button>
-						</Link>
-					</div>
-				</div>
-			);
-
 		case RotaStatus.DRAFT:
 			return (
 				<div className="bg-zinc-600 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
@@ -96,6 +77,23 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: State }) {
 					</div>
 				</div>
 			);
+
+		default:
+			return (
+				<div className="bg-zinc-700 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
+					<div>
+						<h2 className="font-semibold text-2xl">NO ROTA TODAY</h2>
+						<p className="italic">Click on the arrow on the right to <b>start</b>.</p>
+					</div>
+					<div>
+						<Link href={"/rotas/modify"} className="flex">
+							<Button variant="link" className="hover:cursor-pointer">
+								<ArrowRight className="size-8" />
+							</Button>
+						</Link>
+					</div>
+				</div>
+			);
 	}
 }
 
@@ -116,7 +114,7 @@ export default async function RotasPage() {
 			</div>
 
 			<div className="flex flex-col py-6">
-				<TodayRotaBox rotaStatus={todaysRota?.status ?? "DRAFT"} />
+				<TodayRotaBox rotaStatus={todaysRota?.status ?? null} />
 			</div>
 
 			<div className="flex flex-col py-4">
