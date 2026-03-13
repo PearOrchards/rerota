@@ -7,6 +7,7 @@ import { roleAllows } from "@/lib/auth/roles";
 import { revalidatePath } from "next/cache";
 import type { ModifyResponse, RotaAssignmentInput, JoinedRota } from "@/lib/types";
 import { extractReadableErrorMessage } from "@/lib/utils";
+import RotaGenerator from "@/lib/rotaGenerator";
 
 const COMPETENCY_EXPIRY_CATEGORY = "Competency Break until Lost";
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -281,6 +282,8 @@ export async function saveTodayRota(entries: RotaAssignmentInput[]): Promise<Mod
 			},
 		});
 
+		let id: string | null = null;
+
 		if (existingRota) {
 			await prisma.rota.update({
 				where: {
@@ -299,8 +302,9 @@ export async function saveTodayRota(entries: RotaAssignmentInput[]): Promise<Mod
 					},
 				},
 			});
+			id = existingRota.id;
 		} else {
-			await prisma.rota.create({
+			const newRota = await prisma.rota.create({
 				data: {
 					businessId: session.businessId,
 					applicableDate,
@@ -316,14 +320,18 @@ export async function saveTodayRota(entries: RotaAssignmentInput[]): Promise<Mod
 						: {}),
 				},
 			});
+			id = newRota.id;
 		}
 
 		revalidatePath("/rotas");
 		revalidatePath("/rotas/modify");
 
+		const rotaGenerator = new RotaGenerator(id, session.businessId);
+		await rotaGenerator.start();
+
 		return {
 			success: true,
-			message: "Rota saved successfully.",
+			message: "Saved locks successfully, generating now...",
 		};
 	} catch (error) {
 		console.error("Error saving rota:", error);
