@@ -5,3 +5,4 @@ export * from "./competency";
 export * from "./numberMatrix";
 export * from "./rides";
 export * from "./staffMember";
+export * from "./rota";

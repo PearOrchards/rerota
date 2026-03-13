@@ -1,10 +1,10 @@
 import { use } from "react";
-import { TodayRota } from "@/lib/actions/rotas";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { JoinedRota } from "@/lib/types";
 
-export function History({ history }: { history: Promise<TodayRota[]> }) {
+export function History({ history }: { history: Promise<JoinedRota[]> }) {
 	const prior = use(history);
 
 	return (

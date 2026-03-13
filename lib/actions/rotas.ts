@@ -5,24 +5,11 @@ import { RotaStatus } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/session";
 import { roleAllows } from "@/lib/auth/roles";
 import { revalidatePath } from "next/cache";
-import type { ModifyResponse } from "@/lib/types/common";
+import type { ModifyResponse, RotaAssignmentInput, JoinedRota } from "@/lib/types";
 import { extractReadableErrorMessage } from "@/lib/utils";
 
 const COMPETENCY_EXPIRY_CATEGORY = "Competency Break until Lost";
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
-
-export type RotaAssignmentInput = {
-	staffMemberId: string;
-	rideId: string;
-	positionId: string;
-};
-
-export type TodayRota = {
-	id: string;
-	status: RotaStatus;
-	applicableDate: Date;
-	details: RotaAssignmentInput[];
-};
 
 const getTodayBounds = () => {
 	const start = new Date();
@@ -50,7 +37,7 @@ async function requireRotaAccess() {
 	return session;
 }
 
-export async function getToday(): Promise<TodayRota | null> {
+export async function getToday(): Promise<JoinedRota | null> {
 	const session = await requireRotaAccess();
 	const { start, end } = getTodayBounds();
 
@@ -80,7 +67,7 @@ export async function getToday(): Promise<TodayRota | null> {
 	});
 }
 
-export async function getPreviousRotas(): Promise<TodayRota[]> {
+export async function getPreviousRotas(): Promise<JoinedRota[]> {
 	const session = await requireSession();
 	const { start } = getTodayBounds();
 
