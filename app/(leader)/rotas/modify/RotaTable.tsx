@@ -394,7 +394,7 @@ export default function RotaTable({
 					title="Are you sure?"
 					description="If you continue now, any remaining slots will be filled automatically."
 					trigger={
-						<Button onClick={handleSave} disabled={isSaving}>
+						<Button disabled={isSaving}>
 							{isSaving ? "Saving..." : "Continue"}
 						</Button>
 					}

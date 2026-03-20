@@ -2,7 +2,11 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { HungarianAlgorithm } from "@/lib/HungarianAlgorithm";
 import { listCompetenciesForBusiness } from "@/lib/server/competencies";
-import type { CompetencyWithExpiry, JoinedRota, RotaAssignmentInput } from "@/lib/types";
+import type {
+	CompetencyWithExpiry,
+	JoinedRota,
+	RotaAssignmentInput,
+} from "@/lib/types";
 
 type RotaAssignmentCandidate = RotaAssignmentInput & {
 	competency: CompetencyWithExpiry;
@@ -100,15 +104,27 @@ class RotaGenerator {
 	}
 
 	private async initializeAssignmentCandidates() {
+		const lockedStaffIds = this.getLockedStaffIds();
 		const competencies = await listCompetenciesForBusiness(this.businessId);
 		this.assignmentCandidates = competencies
-			.filter((competency) => competency.status !== "Expired")
+			.filter(
+				(competency) =>
+					competency.status !== "Expired" && !lockedStaffIds.has(competency.staffMemberId),
+			)
 			.map((competency) => ({
 				staffMemberId: competency.staffMemberId,
 				rideId: competency.rideId,
 				positionId: competency.positionId,
 				competency,
 			}));
+	}
+
+	private getLockedStaffIds(): Set<string> {
+		if (!this.rotaData) throw new Error("Unable to read locked staff without a loaded rota.");
+
+		return new Set(
+			this.rotaData.details.map((assignment) => assignment.staffMemberId),
+		);
 	}
 
 	private buildSlotKeysFromRemainingCapacity(): string[] {
