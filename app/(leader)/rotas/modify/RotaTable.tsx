@@ -15,7 +15,7 @@ import {
 	MultiSelect,
 	type MultiSelectOption,
 } from "@/components/ui/multi-select";
-import { saveRota, fillRota } from "@/lib/actions/rotas";
+import { fillRotaById, saveRotaById } from "@/lib/actions/rotas";
 import type {
 	CompetencyWithExpiry,
 	RideWithExtra,
@@ -39,6 +39,7 @@ type RotaTableProps = {
   competencies: CompetencyWithExpiry[];
   initialState: AssignmentMap;
   positions: Position[];
+  rotaId: string;
   rides: RideWithExtra[];
   staff: StaffMemberWithCompetencies[];
 };
@@ -127,6 +128,7 @@ export default function RotaTable({
 	competencies,
 	initialState,
 	positions,
+	rotaId,
 	rides,
 	staff,
 }: RotaTableProps) {
@@ -267,23 +269,21 @@ export default function RotaTable({
 	};
 
 	const transformedAssignments = () => {
-		return Object.entries(assignments).flatMap(
-			([cellId, staffIds]) => {
-				const [rideId, positionId] = cellId.split(":");
-				return staffIds.map((staffMemberId) => ({
-					staffMemberId,
-					rideId,
-					positionId,
-				}));
-			},
-		);
+		return Object.entries(assignments).flatMap(([cellId, staffIds]) => {
+			const [rideId, positionId] = cellId.split(":");
+			return staffIds.map((staffMemberId) => ({
+				staffMemberId,
+				rideId,
+				positionId,
+			}));
+		});
 	};
 
 	// When saving, we need to transform the assignments map back into the format expected by the API, which is an array of { staffMemberId, rideId, positionId }.
 	const handleSave = async () => {
 		setIsSaving(true);
 		const payload = transformedAssignments();
-		const res = await saveRota(payload);
+		const res = await saveRotaById(rotaId, payload);
 		setIsSaving(false);
 
 		if (res.success) toast.success(res.message);
@@ -294,7 +294,7 @@ export default function RotaTable({
 	const handleContinue = async () => {
 		setIsFilling(true);
 		const payload = transformedAssignments();
-		const res = await fillRota(payload);
+		const res = await fillRotaById(rotaId, payload);
 		setIsFilling(false);
 		return res;
 	};
@@ -406,7 +406,11 @@ export default function RotaTable({
 			</div>
 
 			<div className="flex justify-end gap-2">
-				<Button disabled={isSaving || isFilling} variant="secondary" onClick={handleSave}>
+				<Button
+					disabled={isSaving || isFilling}
+					variant="secondary"
+					onClick={handleSave}
+				>
 					{ isSaving ? "Saving..." : "Save" }
 				</Button>
 				<ConfirmEntityModal

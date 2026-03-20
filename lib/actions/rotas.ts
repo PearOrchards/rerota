@@ -38,6 +38,33 @@ async function requireRotaAccess() {
 	return session;
 }
 
+async function requireOwnedRota(rotaId: string, businessId: string) {
+	const rota = await prisma.rota.findFirst({
+		where: {
+			id: rotaId,
+			businessId,
+		},
+		select: {
+			id: true,
+			status: true,
+			applicableDate: true,
+		},
+	});
+
+	if (!rota) {
+		throw new Error("Rota not found.");
+	}
+
+	return rota;
+}
+
+function revalidateRotaPaths(rotaId: string) {
+	revalidatePath("/rotas");
+	revalidatePath("/rotas/modify");
+	revalidatePath(`/rotas/modify/${rotaId}`);
+	revalidatePath(`/rotas/view/${rotaId}`);
+}
+
 export async function getToday(): Promise<JoinedRota | null> {
 	const session = await requireRotaAccess();
 	const { start, end } = getTodayBounds();
@@ -97,7 +124,74 @@ export async function getPreviousRotas(): Promise<JoinedRota[]> {
 	});
 }
 
-async function saveRotaAssignment(entries: RotaAssignmentInput[], businessId: string): Promise<string> {
+export async function getRotaById(rotaId: string): Promise<JoinedRota | null> {
+	const session = await requireRotaAccess();
+
+	return await prisma.rota.findFirst({
+		where: {
+			id: rotaId,
+			businessId: session.businessId,
+		},
+		select: {
+			id: true,
+			status: true,
+			applicableDate: true,
+			details: {
+				select: {
+					staffMemberId: true,
+					rideId: true,
+					positionId: true,
+				},
+			},
+		},
+	});
+}
+
+export async function getOrCreateTodayRotaId(): Promise<string> {
+	const session = await requireRotaAccess();
+	const { start, end } = getTodayBounds();
+
+	const existingRota = await prisma.rota.findFirst({
+		where: {
+			businessId: session.businessId,
+			applicableDate: {
+				gte: start,
+				lt: end,
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+		select: {
+			id: true,
+		},
+	});
+
+	if (existingRota) {
+		return existingRota.id;
+	}
+
+	const newRota = await prisma.rota.create({
+		data: {
+			businessId: session.businessId,
+			applicableDate: new Date(start),
+			status: RotaStatus.DRAFT,
+		},
+		select: {
+			id: true,
+		},
+	});
+
+	revalidateRotaPaths(newRota.id);
+
+	return newRota.id;
+}
+
+async function saveRotaAssignment(
+	entries: RotaAssignmentInput[],
+	businessId: string,
+	rotaId?: string,
+): Promise<string> {
 	const normalizedEntries = Array.from(
 		new Map(
 			entries.map((entry) => [
@@ -108,10 +202,19 @@ async function saveRotaAssignment(entries: RotaAssignmentInput[], businessId: st
 	);
 
 	const { start, end } = getTodayBounds();
-	const applicableDate = new Date(start);
-	const staffIds = Array.from(new Set(normalizedEntries.map((entry) => entry.staffMemberId)));
-	const rideIds = Array.from(new Set(normalizedEntries.map((entry) => entry.rideId)));
-	const positionIds = Array.from(new Set(normalizedEntries.map((entry) => entry.positionId)));
+	const targetRota = rotaId ? await requireOwnedRota(rotaId, businessId) : null;
+	const applicableDate = targetRota
+		? targetRota.applicableDate
+		: new Date(start);
+	const staffIds = Array.from(
+		new Set(normalizedEntries.map((entry) => entry.staffMemberId)),
+	);
+	const rideIds = Array.from(
+		new Set(normalizedEntries.map((entry) => entry.rideId)),
+	);
+	const positionIds = Array.from(
+		new Set(normalizedEntries.map((entry) => entry.positionId)),
+	);
 
 	const [rides, staffMembers, category] = await Promise.all([
 		prisma.ride.findMany({
@@ -262,26 +365,32 @@ async function saveRotaAssignment(entries: RotaAssignmentInput[], businessId: st
 		}
 	}
 
-	const existingRota = await prisma.rota.findFirst({
-		where: {
-			businessId,
-			applicableDate: {
-				gte: start,
-				lt: end,
+	const existingRota = targetRota
+		? { id: targetRota.id, status: targetRota.status }
+		: await prisma.rota.findFirst({
+			where: {
+				businessId,
+				applicableDate: {
+					gte: start,
+					lt: end,
+				},
 			},
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		select: {
-			id: true,
-			status: true,
-		},
-	});
+			orderBy: {
+				createdAt: "desc",
+			},
+			select: {
+				id: true,
+				status: true,
+			},
+		});
 
 	let id: string | null = null;
 
 	if (existingRota) {
+		if (existingRota.status !== RotaStatus.DRAFT) {
+			throw new Error("Only draft rotas can be modified.");
+		}
+
 		await prisma.rota.update({
 			where: {
 				id: existingRota.id,
@@ -323,16 +432,21 @@ async function saveRotaAssignment(entries: RotaAssignmentInput[], businessId: st
 	return id;
 }
 
-export async function fillRota(entries: RotaAssignmentInput[]): Promise<ModifyResponse> {
+export async function fillRotaById(
+	rotaId: string,
+	entries: RotaAssignmentInput[],
+): Promise<ModifyResponse> {
 	const session = await requireRotaAccess();
 
 	try {
-		const rotaId = await saveRotaAssignment(entries, session.businessId);
-		const generator = new RotaGenerator(rotaId, session.businessId);
+		const savedRotaId = await saveRotaAssignment(
+			entries,
+			session.businessId,
+			rotaId,
+		);
+		const generator = new RotaGenerator(savedRotaId, session.businessId);
 		await generator.start();
-
-		revalidatePath("/rotas");
-		revalidatePath("/rotas/modify");
+		revalidateRotaPaths(savedRotaId);
 
 		return {
 			success: true,
@@ -347,14 +461,19 @@ export async function fillRota(entries: RotaAssignmentInput[]): Promise<ModifyRe
 	}
 }
 
-export async function saveRota(entries: RotaAssignmentInput[]): Promise<ModifyResponse> {
+export async function saveRotaById(
+	rotaId: string,
+	entries: RotaAssignmentInput[],
+): Promise<ModifyResponse> {
 	const session = await requireRotaAccess();
 
 	try {
-		await saveRotaAssignment(entries, session.businessId);
-
-		revalidatePath("/rotas");
-		revalidatePath("/rotas/modify");
+		const savedRotaId = await saveRotaAssignment(
+			entries,
+			session.businessId,
+			rotaId,
+		);
+		revalidateRotaPaths(savedRotaId);
 
 		return {
 			success: true,
@@ -362,6 +481,56 @@ export async function saveRota(entries: RotaAssignmentInput[]): Promise<ModifyRe
 		};
 	} catch (error) {
 		console.error("Error saving rota:", error);
+		return {
+			success: false,
+			message: extractReadableErrorMessage(error),
+		};
+	}
+}
+
+export async function activateRota(rotaId: string): Promise<ModifyResponse> {
+	const session = await requireRotaAccess();
+
+	try {
+		const rota = await prisma.rota.findFirst({
+			where: {
+				id: rotaId,
+				businessId: session.businessId,
+			},
+			select: {
+				id: true,
+				status: true,
+				details: {
+					select: {
+						staffMemberId: true,
+					},
+				},
+			},
+		});
+
+		if (!rota) {
+			throw new Error("Rota not found.");
+		}
+		if (rota.status !== RotaStatus.DRAFT) {
+			throw new Error("Only draft rotas can be activated.");
+		}
+		if (!rota.details.length) {
+			throw new Error("Cannot activate an empty rota.");
+		}
+
+		await prisma.rota.update({
+			where: { id: rota.id },
+			data: { status: RotaStatus.ACTIVE },
+		});
+
+		revalidateRotaPaths(rota.id);
+
+		return {
+			success: true,
+			message: "Rota is now active.",
+		};
+	} catch (error) {
+		console.error("Error activating rota:", error);
 		return {
 			success: false,
 			message: extractReadableErrorMessage(error),
