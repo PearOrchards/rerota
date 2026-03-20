@@ -7,7 +7,7 @@ import { roleAllows } from "@/lib/auth/roles";
 import { revalidatePath } from "next/cache";
 import type { ModifyResponse, RotaAssignmentInput, JoinedRota } from "@/lib/types";
 import { extractReadableErrorMessage } from "@/lib/utils";
-import RotaGenerator from "@/lib/rotaGenerator";
+import RotaGenerator from "@/lib/RotaGenerator";
 
 const COMPETENCY_EXPIRY_CATEGORY = "Competency Break until Lost";
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
