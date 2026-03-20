@@ -1,6 +1,6 @@
 import { Ellipsis, Pencil, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DeleteEntityModal } from "@/components/DeleteEntityModal";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 import { deleteCompetency } from "@/lib/actions/competencies";
 import type { CompetencyWithExpiry } from "@/lib/types/competency";
 import { CompetencyFormModal } from "./CompetencyFormModal";
@@ -27,7 +27,7 @@ export function Actions({ competency }: ActionsProps) {
 						</DropdownMenuItem>
 					}
 				/>
-				<DeleteEntityModal
+				<ConfirmEntityModal
 					title="Delete Competency"
 					description={`Are you sure you want to delete the competency of ${competency.staffMemberName} on ${competency.rideName} (as ${competency.positionName})? This action cannot be undone.`}
 					trigger={

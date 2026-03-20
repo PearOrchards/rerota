@@ -17,6 +17,7 @@ export function roleAllows(userRole: string, requiredRole?: string | null): bool
 
 export function requiredRoleForPath(pathname: string): string | null {
 	const roleByPrefix: Array<{ prefix: string; role: string }> = [
+		{ prefix: "/rotas", role: "Team Leader" },
 		{ prefix: "/rides", role: "Manager" },
 		{ prefix: "/competencies", role: "Team Leader" },
 		{ prefix: "/business", role: "Manager" },

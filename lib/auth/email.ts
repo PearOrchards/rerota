@@ -1,5 +1,5 @@
 import { createTransport } from "nodemailer";
-import { buildMagicLinkEmail } from "@/lib/auth/email-templates/magic-link";
+import { buildMagicLinkEmail } from "@/lib/auth/emailTemplates/magicLink";
 
 const transporter = createTransport({
 	host: process.env.SMTP_HOST,

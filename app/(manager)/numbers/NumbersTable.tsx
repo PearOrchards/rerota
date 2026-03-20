@@ -5,8 +5,8 @@ import { CellContext, ColumnDef, flexRender, getCoreRowModel, useReactTable } fr
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { NumberMatrixTableData } from "@/lib/types/number-matrix";
-import { updateNumberMatrixEntries } from "@/lib/actions/number-matrix";
+import type { NumberMatrixTableData } from "@/lib/types/numberMatrix";
+import { updateNumberMatrixEntries } from "@/lib/actions/numberMatrix";
 import { toast } from "sonner";
 
 type ClientRow = {

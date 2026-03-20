@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth/rbac";
-import type { NumberMatrixTableData } from "@/lib/types/number-matrix";
+import type { NumberMatrixTableData } from "@/lib/types/numberMatrix";
 import { ModifyResponse } from "@/lib/types/common";
 import { extractReadableErrorMessage } from "@/lib/utils";
 

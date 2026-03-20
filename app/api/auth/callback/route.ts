@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consumeMagicLink } from "@/lib/auth/magic-links";
+import { consumeMagicLink } from "@/lib/auth/magicLinks";
 import { issueAuthTokens } from "@/lib/auth/tokens";
 import { setAuthCookies } from "@/lib/auth/cookies";
 

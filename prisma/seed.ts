@@ -11,6 +11,17 @@ import {
 	Tier,
 } from "../generated/prisma/client";
 
+const UTC_SEED_HOUR = 12;
+const daysAgo = (days: number): Date => {
+	const now = new Date();
+	return new Date(Date.UTC(
+		now.getUTCFullYear(),
+		now.getUTCMonth(),
+		now.getUTCDate() - days,
+		UTC_SEED_HOUR,
+	));
+};
+
 const permissionResources = [
 	"staffMember",
 	"business",
@@ -100,6 +111,31 @@ const staff: Omit<StaffMember, "createdAt" | "updatedAt" | "businessId">[] = [
 		id: "5",
 		firstName: "Harry",
 		lastName: "Harry",
+	},
+	{
+		id: "6",
+		firstName: "Lauren",
+		lastName: "Allen",
+	},
+	{
+		id: "7",
+		firstName: "Mason",
+		lastName: "Clarke",
+	},
+	{
+		id: "8",
+		firstName: "Nia",
+		lastName: "Patel",
+	},
+	{
+		id: "9",
+		firstName: "Lucas",
+		lastName: "Bennett",
+	},
+	{
+		id: "10",
+		firstName: "Zoe",
+		lastName: "Carter",
 	},
 ];
 
@@ -399,189 +435,91 @@ const rides: (Omit<Ride, "businessId"> & { positionIds: string[] })[] = [
 	},
 ];
 
+const seedCompetency = (
+	staffMemberId: string,
+	rideId: string,
+	positionId: string,
+	achievedDaysAgo: number,
+	lastRotatedDaysAgo: number | null,
+): Competency => ({
+	staffMemberId,
+	rideId,
+	positionId,
+	achievedAt: daysAgo(achievedDaysAgo),
+	last_rotatedAt: lastRotatedDaysAgo === null ? null : daysAgo(lastRotatedDaysAgo),
+});
+
 const competencies: Competency[] = [
 	// Pawel (has 3 rides: Triangle, Circle, Square)
-	{
-		staffMemberId: "1",
-		rideId: "1",
-		positionId: "2",
-		achievedAt: new Date("2025-12-31"),
-		last_rotatedAt: new Date("2026-01-15"),
-	},
-	{
-		staffMemberId: "1",
-		rideId: "1",
-		positionId: "1",
-		achievedAt: new Date("2025-12-28"),
-		last_rotatedAt: new Date("2026-01-10"),
-	},
-	{
-		staffMemberId: "1",
-		rideId: "3",
-		positionId: "2",
-		achievedAt: new Date("2025-11-15"),
-		last_rotatedAt: new Date("2026-01-05"),
-	},
-	{
-		staffMemberId: "1",
-		rideId: "3",
-		positionId: "1",
-		achievedAt: new Date("2025-11-10"),
-		last_rotatedAt: new Date("2026-01-02"),
-	},
-	{
-		staffMemberId: "1",
-		rideId: "2",
-		positionId: "2",
-		achievedAt: new Date("2026-01-01"),
-		last_rotatedAt: new Date("2026-01-28"),
-	},
-	{
-		staffMemberId: "1",
-		rideId: "2",
-		positionId: "1",
-		achievedAt: new Date("2025-12-20"),
-		last_rotatedAt: new Date("2026-01-25"),
-	},
+	seedCompetency("1", "1", "2", 18, 9),
+	seedCompetency("1", "1", "1", 19, 8),
+	seedCompetency("1", "3", "2", 25, 12),
+	seedCompetency("1", "3", "1", 29, 13),
+	seedCompetency("1", "2", "2", 16, 6),
+	seedCompetency("1", "2", "1", 17, 5),
 
 	// Ethan (has 3 rides: Square, Rectangle, Circle)
-	{
-		staffMemberId: "2",
-		rideId: "2",
-		positionId: "2",
-		achievedAt: new Date("2025-12-05"),
-		last_rotatedAt: new Date("2026-01-25"),
-	},
-	{
-		staffMemberId: "2",
-		rideId: "2",
-		positionId: "1",
-		achievedAt: new Date("2025-11-30"),
-		last_rotatedAt: new Date("2026-01-20"),
-	},
-	{
-		staffMemberId: "2",
-		rideId: "4",
-		positionId: "2",
-		achievedAt: new Date("2025-09-25"),
-		last_rotatedAt: new Date("2025-11-30"),
-	},
-	{
-		staffMemberId: "2",
-		rideId: "4",
-		positionId: "1",
-		achievedAt: new Date("2025-09-20"),
-		last_rotatedAt: new Date("2025-11-25"),
-	},
-	{
-		staffMemberId: "2",
-		rideId: "3",
-		positionId: "2",
-		achievedAt: new Date("2025-11-20"),
-		last_rotatedAt: new Date("2026-01-10"),
-	},
-	{
-		staffMemberId: "2",
-		rideId: "3",
-		positionId: "1",
-		achievedAt: new Date("2025-11-15"),
-		last_rotatedAt: new Date("2026-01-08"),
-	},
+	seedCompetency("2", "2", "2", 21, 11),
+	seedCompetency("2", "2", "1", 24, 10),
+	seedCompetency("2", "4", "2", 58, 52), // expired
+	seedCompetency("2", "4", "1", 44, 18),
+	seedCompetency("2", "3", "2", 27, 15),
+	seedCompetency("2", "3", "1", 28, 14),
+
 	// Archie (has 3 rides: Triangle, Circle, Rectangle)
-	{
-		staffMemberId: "3",
-		rideId: "1",
-		positionId: "2",
-		achievedAt: new Date("2026-01-10"),
-		last_rotatedAt: null,
-	},
-	{
-		staffMemberId: "3",
-		rideId: "1",
-		positionId: "1",
-		achievedAt: new Date("2026-01-08"),
-		last_rotatedAt: null,
-	},
-	{
-		staffMemberId: "3",
-		rideId: "3",
-		positionId: "2",
-		achievedAt: new Date("2025-10-31"),
-		last_rotatedAt: new Date("2026-01-12"),
-	},
-	{
-		staffMemberId: "3",
-		rideId: "3",
-		positionId: "1",
-		achievedAt: new Date("2025-10-25"),
-		last_rotatedAt: new Date("2026-01-08"),
-	},
-	{
-		staffMemberId: "3",
-		rideId: "4",
-		positionId: "2",
-		achievedAt: new Date("2025-09-15"),
-		last_rotatedAt: new Date("2025-12-20"),
-	},
-	{
-		staffMemberId: "3",
-		rideId: "4",
-		positionId: "1",
-		achievedAt: new Date("2025-09-10"),
-		last_rotatedAt: new Date("2025-12-15"),
-	},
+	seedCompetency("3", "1", "2", 12, null),
+	seedCompetency("3", "1", "1", 14, null),
+	seedCompetency("3", "3", "2", 30, 16),
+	seedCompetency("3", "3", "1", 31, 17),
+	seedCompetency("3", "4", "2", 34, 20),
+	seedCompetency("3", "4", "1", 35, 19),
+
 	// Farhan (has 3 rides: Pentagon, Rectangle, Circle)
-	{
-		staffMemberId: "4",
-		rideId: "5",
-		positionId: "2",
-		achievedAt: new Date("2025-08-10"),
-		last_rotatedAt: new Date("2025-11-15"),
-	},
-	{
-		staffMemberId: "4",
-		rideId: "5",
-		positionId: "1",
-		achievedAt: new Date("2025-08-05"),
-		last_rotatedAt: new Date("2025-11-10"),
-	},
-	{
-		staffMemberId: "4",
-		rideId: "4",
-		positionId: "2",
-		achievedAt: new Date("2025-12-01"),
-		last_rotatedAt: new Date("2026-01-18"),
-	},
-	{
-		staffMemberId: "4",
-		rideId: "4",
-		positionId: "1",
-		achievedAt: new Date("2025-11-25"),
-		last_rotatedAt: new Date("2026-01-15"),
-	},
-	{
-		staffMemberId: "4",
-		rideId: "3",
-		positionId: "2",
-		achievedAt: new Date("2025-12-10"),
-		last_rotatedAt: new Date("2026-01-20"),
-	},
-	{
-		staffMemberId: "4",
-		rideId: "3",
-		positionId: "1",
-		achievedAt: new Date("2025-12-05"),
-		last_rotatedAt: new Date("2026-01-18"),
-	},
+	seedCompetency("4", "5", "2", 36, 23),
+	seedCompetency("4", "5", "1", 37, 22),
+	seedCompetency("4", "4", "2", 26, 12),
+	seedCompetency("4", "4", "1", 27, 13),
+	seedCompetency("4", "3", "2", 22, 9),
+	seedCompetency("4", "3", "1", 24, 73), // expired
 
 	// Harry (has 1 ride: Pentagon Attendant only)
-	{
-		staffMemberId: "5",
-		rideId: "5",
-		positionId: "1",
-		achievedAt: new Date("2025-07-20"),
-		last_rotatedAt: new Date("2025-10-25"),
-	},
+	seedCompetency("5", "5", "1", 75, 9),
+
+	// Olivia (has 3 rides: Triangle, Square, Rectangle)
+	seedCompetency("6", "1", "2", 20, 7),
+	seedCompetency("6", "1", "1", 21, 8),
+	seedCompetency("6", "2", "2", 24, 10),
+	seedCompetency("6", "2", "1", 25, 11),
+	seedCompetency("6", "4", "2", 33, 15),
+	seedCompetency("6", "4", "1", 34, 16),
+
+	// Mason (has 3 rides: Circle, Rectangle, Pentagon)
+	seedCompetency("7", "3", "2", 19, 6),
+	seedCompetency("7", "3", "1", 20, 7),
+	seedCompetency("7", "4", "2", 31, 14),
+	seedCompetency("7", "4", "1", 32, 15),
+	seedCompetency("7", "5", "1", 28, null),
+
+	// Nia (has 3 rides: Triangle, Circle, Pentagon)
+	seedCompetency("8", "1", "2", 17, null),
+	seedCompetency("8", "1", "1", 18, null),
+	seedCompetency("8", "3", "2", 26, 12),
+	seedCompetency("8", "3", "1", 27, 13),
+	seedCompetency("8", "5", "1", 23, 9),
+
+	// Lucas (has 3 rides: Square, Rectangle, Pentagon)
+	seedCompetency("9", "2", "2", 18, 5),
+	seedCompetency("9", "2", "1", 19, 6),
+	seedCompetency("9", "4", "2", 29, 12),
+	seedCompetency("9", "4", "1", 30, 13),
+	seedCompetency("9", "5", "1", 21, 8),
+
+	// Zoe (has 3 rides: Triangle, Circle, Rectangle)
+	seedCompetency("10", "1", "2", 15, 4),
+	seedCompetency("10", "1", "1", 16, 5),
+	seedCompetency("10", "3", "2", 23, 9),
+	seedCompetency("10", "3", "1", 24, 10),
+	seedCompetency("10", "4", "1", 28, 11),
 ];
 
 async function main() {
@@ -589,7 +527,10 @@ async function main() {
 	for (const permission of permissions) {
 		await p.permission.upsert({
 			where: { slug: permission.slug },
-			update: {},
+			update: {
+				resource: permission.resource,
+				action: permission.action,
+			},
 			create: permission,
 		});
 	}

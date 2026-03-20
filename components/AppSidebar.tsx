@@ -20,7 +20,7 @@ import {
 	UserPlus,
 	LogOut,
 	Hash,
-	ArrowLeftRight,
+	ArrowLeftRight, Grid2X2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -84,6 +84,11 @@ const leaderItems = [
 				title: "Dashboard",
 				url: "/",
 				icon: Home,
+			},
+			{
+				title: "Rotas",
+				url: "/rotas",
+				icon: Grid2X2,
 			},
 		],
 	},

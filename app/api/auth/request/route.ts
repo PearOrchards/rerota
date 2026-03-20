@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createMagicLink } from "@/lib/auth/magic-links";
+import { createMagicLink } from "@/lib/auth/magicLinks";
 import { sendMagicLinkEmail } from "@/lib/auth/email";
 
 export async function POST(request: Request) {

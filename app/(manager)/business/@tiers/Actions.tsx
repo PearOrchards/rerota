@@ -3,7 +3,7 @@ import { TierFormModal } from "@/app/(manager)/business/@tiers/TierFormModal";
 import { Button } from "@/components/ui/button";
 
 import { Tier } from "@/generated/prisma/client";
-import { DeleteEntityModal } from "@/components/DeleteEntityModal";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 import { deleteTier } from "@/lib/actions/tiers";
 
 interface ActionsProps {
@@ -23,7 +23,7 @@ export function Actions({
 				}
 				tier={tier}
 			/>
-			<DeleteEntityModal
+			<ConfirmEntityModal
 				title={"Delete Tier"}
 				trigger={
 					<Button variant="ghost" size="icon">

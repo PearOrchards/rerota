@@ -1,6 +1,6 @@
 import { Ellipsis, Pencil, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DeleteEntityModal } from "@/components/DeleteEntityModal";
+import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 import { deleteStaffMember } from "@/lib/actions/staff";
 import { StaffMemberWithCompetencies } from "@/lib/types/staffMember";
 import { StaffFormModal } from "./StaffFormModal";
@@ -32,7 +32,7 @@ export function Actions({
 					}
 					businessId={businessId}
 				/>
-				<DeleteEntityModal
+				<ConfirmEntityModal
 					title="Delete Staff Member"
 					description={`Are you sure you want to delete ${staffMember.firstName} ${staffMember.lastName}? This action cannot be undone.`}
 					trigger={
