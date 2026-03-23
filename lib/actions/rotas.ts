@@ -182,8 +182,6 @@ export async function getOrCreateTodayRotaId(): Promise<string> {
 		},
 	});
 
-	revalidateRotaPaths(newRota.id);
-
 	return newRota.id;
 }
 

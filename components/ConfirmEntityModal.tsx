@@ -15,10 +15,11 @@ import { Button } from "@/components/ui/button";
 import type { ModifyResponse } from "@/lib/types/common";
 
 interface ConfirmEntityModalProps {
-    title: string;
-    description?: string;
-    trigger: React.ReactNode;
-    onConfirm: () => Promise<ModifyResponse>;
+	title: string;
+	description?: string;
+	trigger: React.ReactNode;
+	onConfirm: () => Promise<ModifyResponse>;
+	onSuccess?: (response: ModifyResponse) => void | Promise<void>;
 	buttonText?: string;
 }
 
@@ -36,6 +37,7 @@ export function ConfirmEntityModal({
 	description,
 	trigger,
 	onConfirm,
+	onSuccess,
 	buttonText = "Delete",
 }: ConfirmEntityModalProps) {
 	const [open, setOpen] = useState(false);
@@ -50,6 +52,7 @@ export function ConfirmEntityModal({
 				if (response.success) {
 					setOpen(false);
 					toast.success(response.message || "Action completed successfully.");
+					await onSuccess?.(response);
 				} else {
 					toast.error(response.message || "Failed to perform action.");
 				}

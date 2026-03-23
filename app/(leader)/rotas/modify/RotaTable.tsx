@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Position } from "@/generated/prisma/client";
 import {
@@ -133,6 +134,7 @@ export default function RotaTable({
 	staff,
 }: RotaTableProps) {
 	// Hey so I write this code in a flow state, so I'm gonna go back and add comments because oh my god
+	const router = useRouter();
 	const [assignments, setAssignments] = useState<AssignmentMap>(initialState);
 	const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
@@ -422,6 +424,9 @@ export default function RotaTable({
 						</Button>
 					}
 					onConfirm={handleContinue}
+					onSuccess={(res) => {
+						if (res.success) router.replace(`/rotas/view/${rotaId}`);
+					}}
 					buttonText="Yes, continue"
 				/>
 			</div>
