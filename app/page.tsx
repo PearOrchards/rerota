@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import {
 	resolveManagerSidebarViewMode,
 	SIDEBAR_VIEW_MODE_COOKIE_NAME,
@@ -163,7 +164,7 @@ function ManagerDashboard({ name }: { name: string | undefined }) {
 						Rerota - Manager
 					</p>
 					<h1 className="mt-2 text-4xl font-semibold tracking-tight">
-						Hello{ name ? `, ${name}` : "" }!
+						Hello{ name ? `, ${name}` : "" }
 					</h1>
 				</div>
 			</section>
@@ -258,6 +259,11 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
+	const user = await prisma.staffMember.findUnique({
+		where: { id: session.sub },
+		select: { firstName: true },
+	});
+
 	if (session.roleName === "Team Leader") {
 		return <TeamLeaderDashboardPlaceholder />;
 	}
@@ -271,8 +277,7 @@ export default async function DashboardPage() {
 			return <TeamLeaderDashboardPlaceholder />;
 		}
 
-		// todo: change roleName to user's name
-		return <ManagerDashboard name={session.roleName} />;
+		return <ManagerDashboard name={user?.firstName} />;
 	}
 
 	return null;
