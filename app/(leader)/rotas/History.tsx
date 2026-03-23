@@ -10,7 +10,11 @@ export function History({ history }: { history: Promise<JoinedRota[]> }) {
 	return (
 		<div className="grid grid-cols-3 gap-4 p-2 rounded-2xl bg-black/10">
 			{ prior.map(rota => (
-				<Link key={rota.id} href={`/rotas/${rota.id}`} className="text-center">
+				<Link
+					key={rota.id}
+					href={`/rotas/view/${rota.id}`}
+					className="text-center"
+				>
 					<Button className="hover:cursor-pointer" variant="link">
 						{ rota.applicableDate.toLocaleDateString() }
 						<ExternalLink />

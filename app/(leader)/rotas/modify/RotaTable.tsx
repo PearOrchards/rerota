@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Position } from "@/generated/prisma/client";
 import {
@@ -15,7 +16,7 @@ import {
 	MultiSelect,
 	type MultiSelectOption,
 } from "@/components/ui/multi-select";
-import { saveTodayRota } from "@/lib/actions/rotas";
+import { fillRotaById, saveRotaById } from "@/lib/actions/rotas";
 import type {
 	CompetencyWithExpiry,
 	RideWithExtra,
@@ -23,6 +24,7 @@ import type {
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
+import { toast } from "sonner";
 
 type AssignmentMap = Record<string, string[]>;
 
@@ -38,6 +40,7 @@ type RotaTableProps = {
   competencies: CompetencyWithExpiry[];
   initialState: AssignmentMap;
   positions: Position[];
+  rotaId: string;
   rides: RideWithExtra[];
   staff: StaffMemberWithCompetencies[];
 };
@@ -126,13 +129,16 @@ export default function RotaTable({
 	competencies,
 	initialState,
 	positions,
+	rotaId,
 	rides,
 	staff,
 }: RotaTableProps) {
 	// Hey so I write this code in a flow state, so I'm gonna go back and add comments because oh my god
+	const router = useRouter();
 	const [assignments, setAssignments] = useState<AssignmentMap>(initialState);
 	const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isFilling, setIsFilling] = useState(false);
 
 	// useMemos are used to derive expensive structures which depend on props, meaning on re-renders we can skip recalculating them.
 	// e.g., if staff changes, sortedRides doesn't need to be recalculated, but staffNameById does.
@@ -264,22 +270,34 @@ export default function RotaTable({
 		});
 	};
 
+	const transformedAssignments = () => {
+		return Object.entries(assignments).flatMap(([cellId, staffIds]) => {
+			const [rideId, positionId] = cellId.split(":");
+			return staffIds.map((staffMemberId) => ({
+				staffMemberId,
+				rideId,
+				positionId,
+			}));
+		});
+	};
+
 	// When saving, we need to transform the assignments map back into the format expected by the API, which is an array of { staffMemberId, rideId, positionId }.
 	const handleSave = async () => {
 		setIsSaving(true);
-		const payload = Object.entries(assignments).flatMap(
-			([cellId, staffIds]) => {
-				const [rideId, positionId] = cellId.split(":");
-				return staffIds.map((staffMemberId) => ({
-					staffMemberId,
-					rideId,
-					positionId,
-				}));
-			},
-		);
-
-		const res = await saveTodayRota(payload);
+		const payload = transformedAssignments();
+		const res = await saveRotaById(rotaId, payload);
 		setIsSaving(false);
+
+		if (res.success) toast.success(res.message);
+		else toast.error(res.message);
+	};
+
+	// Same but for filling, but this goes to the ConfirmEntityModal so we don't have to display the toast
+	const handleContinue = async () => {
+		setIsFilling(true);
+		const payload = transformedAssignments();
+		const res = await fillRotaById(rotaId, payload);
+		setIsFilling(false);
 		return res;
 	};
 
@@ -389,16 +407,26 @@ export default function RotaTable({
 				</Table>
 			</div>
 
-			<div className="flex justify-end">
+			<div className="flex justify-end gap-2">
+				<Button
+					disabled={isSaving || isFilling}
+					variant="secondary"
+					onClick={handleSave}
+				>
+					{ isSaving ? "Saving..." : "Save" }
+				</Button>
 				<ConfirmEntityModal
 					title="Are you sure?"
 					description="If you continue now, any remaining slots will be filled automatically."
 					trigger={
-						<Button disabled={isSaving}>
-							{isSaving ? "Saving..." : "Continue"}
+						<Button disabled={isSaving || isFilling} variant="default">
+							{isFilling ? "Saving..." : "Save and Generate"}
 						</Button>
 					}
-					onConfirm={handleSave}
+					onConfirm={handleContinue}
+					onSuccess={(res) => {
+						if (res.success) router.replace(`/rotas/view/${rotaId}`);
+					}}
 					buttonText="Yes, continue"
 				/>
 			</div>

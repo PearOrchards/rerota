@@ -8,7 +8,16 @@ import { Suspense } from "react";
 import { History } from "./History";
 import { Spinner } from "@/components/ui/spinner";
 
-function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
+function TodayRotaBox({
+	rotaId,
+	rotaStatus,
+}: {
+  rotaId: string | null;
+  rotaStatus: RotaStatus | null;
+}) {
+	const draftLink = rotaId ? `/rotas/view/${rotaId}` : "/rotas/modify";
+	const viewLink = rotaId ? `/rotas/view/${rotaId}` : "/rotas";
+
 	switch (rotaStatus) {
 		case RotaStatus.DRAFT:
 			return (
@@ -18,7 +27,7 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 						<p className="italic">Click on the arrow on the right to <b>continue</b>.</p>
 					</div>
 					<div>
-						<Link href={"/rotas/modify"} className="flex">
+						<Link href={draftLink} className="flex">
 							<Button variant="link" className="hover:cursor-pointer">
 								<ArrowRight className="size-8" />
 							</Button>
@@ -35,7 +44,7 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 						<p className="italic">Click on the arrow on the right to <b>review</b>.</p>
 					</div>
 					<div>
-						<Link href={"/rotas/modify"} className="flex">
+						<Link href={viewLink} className="flex">
 							<Button variant="link" className="hover:cursor-pointer">
 								<ArrowRight className="size-8" />
 							</Button>
@@ -52,7 +61,7 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 						<p className="italic">Click on the arrow on the right to <b>review</b>.</p>
 					</div>
 					<div>
-						<Link href={"/rotas/view"} className="flex">
+						<Link href={viewLink} className="flex">
 							<Button variant="link" className="hover:cursor-pointer">
 								<ArrowRight className="size-8" />
 							</Button>
@@ -69,7 +78,7 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 						<p className="italic">Click on the arrow on the right to <b>review</b>.</p>
 					</div>
 					<div>
-						<Link href={"/rotas/view"} className="flex">
+						<Link href={viewLink} className="flex">
 							<Button variant="link" className="hover:cursor-pointer">
 								<ArrowRight className="size-8" />
 							</Button>
@@ -98,7 +107,6 @@ function TodayRotaBox({ rotaStatus }: { rotaStatus: RotaStatus | null }) {
 }
 
 export default async function RotasPage() {
-	const session = await requireSession();
 	const todaysRota = await getToday();
 	const historyPromise = getPreviousRotas();
 
@@ -109,12 +117,14 @@ export default async function RotasPage() {
 					<h1 className="font-semibold text-3xl">ROTAS</h1>
 					<p className="font-normal italic">Who&#39;s doing what today?</p>
 				</div>
-				<div className="mt-auto">
-				</div>
+				<div className="mt-auto"></div>
 			</div>
 
 			<div className="flex flex-col py-6">
-				<TodayRotaBox rotaStatus={todaysRota?.status ?? null} />
+				<TodayRotaBox
+					rotaId={todaysRota?.id ?? null}
+					rotaStatus={todaysRota?.status ?? null}
+				/>
 			</div>
 
 			<div className="flex flex-col py-4">
