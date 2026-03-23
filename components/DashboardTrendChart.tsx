@@ -39,7 +39,7 @@ export default function DashboardTrendChart({
 	} satisfies ChartConfig;
 
 	return (
-		<ChartContainer config={chartConfig} className="min-h-24 w-full">
+		<ChartContainer config={chartConfig} className="h-48 w-full">
 			<LineChart accessibilityLayer data={data} margin={{ left: 12, right: 12, top: 8 }}>
 				<CartesianGrid vertical={false} />
 				<XAxis

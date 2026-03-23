@@ -139,7 +139,7 @@ function PlaceholderChart({
 				</CardAction>
 			</CardHeader>
 			<CardContent>
-				<div className="rounded-2xl border bg-muted px-4 py-2">
+				<div className="rounded-2xl border bg-muted p-4">
 					<DashboardTrendChart
 						color={color}
 						data={data}
@@ -174,8 +174,8 @@ function ManagerDashboard({ name }: { name: string | undefined }) {
 				))}
 			</section>
 
-			<section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-				<Card>
+			<section className="grid items-start gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+				<Card className="self-start">
 					<CardHeader>
 						<CardTitle className="text-lg">Your Tasks</CardTitle>
 						<CardDescription>
