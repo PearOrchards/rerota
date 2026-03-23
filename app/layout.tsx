@@ -3,8 +3,13 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { Figtree } from "next/font/google";
 import { ThemeProvider as NextThemeProvider } from "next-themes";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
+import {
+	parseSidebarViewMode,
+	SIDEBAR_VIEW_MODE_COOKIE_NAME,
+} from "@/lib/sidebarViewMode";
 import "./globals.css";
 
 const figtreeFont = Figtree({
@@ -33,7 +38,13 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode
 }>) {
-	const session = await getSession();
+	const [session, cookieStore] = await Promise.all([getSession(), cookies()]);
+	const sidebarStateCookie = cookieStore.get("sidebar_state")?.value;
+	const sidebarViewMode = parseSidebarViewMode(
+		cookieStore.get(SIDEBAR_VIEW_MODE_COOKIE_NAME)?.value,
+	);
+	const defaultSidebarOpen =
+		sidebarStateCookie === undefined ? true : sidebarStateCookie === "true";
 
 	return (
 		<html lang="en" suppressHydrationWarning>
@@ -41,8 +52,11 @@ export default async function RootLayout({
 				className={`${figtreeFont.className} antialiased bg-blue-50 dark:bg-zinc-900`}
 			>
 				<ThemeProvider>
-					<SidebarProvider>
-						<AppSidebar roleName={session?.roleName ?? null} />
+					<SidebarProvider defaultOpen={defaultSidebarOpen}>
+						<AppSidebar
+							initialViewMode={sidebarViewMode}
+							roleName={session?.roleName ?? null}
+						/>
 						{children}
 						<Toaster position="top-right" />
 					</SidebarProvider>

@@ -23,10 +23,17 @@ import {
 	ArrowLeftRight, Grid2X2,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { roleAllows } from "@/lib/auth/roles";
+import {
+	canSwitchSidebarView,
+	resolveSidebarMode,
+	SIDEBAR_VIEW_MODE_COOKIE_MAX_AGE,
+	SIDEBAR_VIEW_MODE_COOKIE_NAME,
+	type SidebarMode,
+	type SidebarViewMode,
+} from "@/lib/sidebarViewMode";
 
 const managerItems = [
 	{
@@ -127,9 +134,6 @@ const commonItems = {
 	],
 };
 
-type SidebarMode = "manager" | "leader" | "staff";
-type SwitchableSidebarMode = Extract<SidebarMode, "manager" | "leader">;
-
 const viewModeLabels: Record<SidebarMode, string> = {
 	manager: "Manager",
 	leader: "Team Leader",
@@ -142,32 +146,36 @@ const sidebarItemsByMode: Record<SidebarMode, typeof managerItems> = {
 	staff: staffItems,
 };
 
-function canSwitchSidebarView(roleName: string | null): boolean {
-	return !!roleName && roleAllows(roleName, "Manager");
-}
+type AppSidebarProps = {
+	initialViewMode?: SidebarViewMode | null;
+	roleName: string | null;
+};
 
-function resolveSidebarMode(roleName: string | null): SidebarMode {
-	if (canSwitchSidebarView(roleName)) {
-		return "manager";
-	}
-	if (roleName === "Team Leader") {
-		return "leader";
-	}
-	return "staff";
-}
-
-export function AppSidebar({ roleName }: { roleName: string | null }) {
+export function AppSidebar({
+	initialViewMode,
+	roleName,
+}: AppSidebarProps) {
 	const path = usePathname();
+	const router = useRouter();
 	const canSwitchView = canSwitchSidebarView(roleName);
-	const [switchableViewMode, setSwitchableViewMode] = useState<SwitchableSidebarMode>("manager");
-	const viewMode = canSwitchView ? switchableViewMode : resolveSidebarMode(roleName);
+	const [switchableViewMode, setSwitchableViewMode] = useState<SidebarViewMode>(
+		initialViewMode ?? "manager",
+	);
+	const viewMode = resolveSidebarMode(roleName, switchableViewMode);
 	const sidebarItems = sidebarItemsByMode[viewMode];
 
 	const toggleView = () => {
 		if (!canSwitchView) {
 			return;
 		}
-		setSwitchableViewMode((currentMode) => (currentMode === "manager" ? "leader" : "manager"));
+
+		const nextMode = switchableViewMode === "manager" ? "leader" : "manager";
+		setSwitchableViewMode(nextMode);
+		document.cookie = `${SIDEBAR_VIEW_MODE_COOKIE_NAME}=${nextMode}; path=/; max-age=${SIDEBAR_VIEW_MODE_COOKIE_MAX_AGE}`;
+
+		if (path === "/") {
+			router.refresh();
+		}
 	};
 
 	const logout = async () => {
