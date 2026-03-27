@@ -7,6 +7,7 @@ import type {
 	JoinedRota,
 	RotaAssignmentInput,
 } from "@/lib/types";
+import { getRidePositionKey } from "@/lib/utils";
 
 type RotaAssignmentCandidate = RotaAssignmentInput & {
 	competency: CompetencyWithExpiry;
@@ -94,10 +95,7 @@ class RotaGenerator {
 
 		this.remainingCapacityByRidePosition = new Map(
 			rides.flatMap((ride) => ride.ridePositions.map((ridePosition) => [
-				this.getRidePositionKey({
-					rideId: ride.id,
-					positionId: ridePosition.positionId,
-				}),
+				getRidePositionKey(ride.id, ridePosition.positionId),
 				ridePosition.quantity,
 			])),
 		);
@@ -150,7 +148,7 @@ class RotaGenerator {
 			const staffScore = this.staffScores.get(candidate.staffMemberId);
 			if (!staffScore) continue;
 
-			const baseKey = this.getRidePositionKey(candidate);
+			const baseKey = getRidePositionKey(candidate.rideId, candidate.positionId);
 			const capacity = this.remainingCapacityByRidePosition.get(baseKey) ?? 0;
 			for (let i = 0; i < capacity; i++) {
 				staffScore.set(`${baseKey}:${i}`, RotaGenerator.BASE_COMPETENCY_SCORE);
@@ -164,7 +162,7 @@ class RotaGenerator {
 		}
 
 		for (const assignment of this.rotaData.details) {
-			const ridePositionKey = this.getRidePositionKey(assignment);
+			const ridePositionKey = getRidePositionKey(assignment.rideId, assignment.positionId);
 			const remainingCapacity = this.remainingCapacityByRidePosition.get(ridePositionKey);
 			if (remainingCapacity === undefined || remainingCapacity < 1) {
 				throw new Error("Rota has invalid ride-position assignments.");
@@ -187,7 +185,7 @@ class RotaGenerator {
 			}
 
 			const staffScores = this.staffScores.get(candidate.staffMemberId)!;
-			const prefix = `${this.getRidePositionKey(candidate)}:`;
+			const prefix = `${getRidePositionKey(candidate.rideId, candidate.positionId)}:`;
 
 			for (const slotKey of slotKeys) {
 				if (!slotKey.startsWith(prefix)) continue;
@@ -214,7 +212,7 @@ class RotaGenerator {
 			}
 
 			const staffScores = this.staffScores.get(candidate.staffMemberId)!;
-			const prefix = `${this.getRidePositionKey(candidate)}:`;
+			const prefix = `${getRidePositionKey(candidate.rideId, candidate.positionId)}:`;
 
 			for (const slotKey of slotKeys) {
 				if (!slotKey.startsWith(prefix)) continue;
@@ -278,11 +276,6 @@ class RotaGenerator {
 			})),
 			skipDuplicates: true,
 		});
-	}
-
-
-	private getRidePositionKey(candidate: Pick<RotaAssignmentInput, "rideId" | "positionId">): string {
-		return `${candidate.rideId}:${candidate.positionId}`;
 	}
 
 	private getAssignmentKey(candidate: RotaAssignmentInput): string {

@@ -16,25 +16,14 @@ import { Separator } from "@/components/ui/separator";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import {
+	getDashboardMetricsForBusiness,
+	type DashboardMetrics,
+} from "@/lib/server/metrics";
+import {
 	resolveManagerSidebarViewMode,
 	SIDEBAR_VIEW_MODE_COOKIE_NAME,
 } from "@/lib/sidebarViewMode";
 import { ChevronRight } from "lucide-react";
-
-const metricCards = [
-	{
-		label: "Expiring Competencies",
-		value: "14",
-	},
-	{
-		label: "Staff in Training",
-		value: "8",
-	},
-	{
-		label: "Rides with Low Competency Coverage",
-		value: "3",
-	},
-] as const;
 
 const importantTasks = [
 	{
@@ -85,23 +74,33 @@ function PlaceholderBadge() {
 	);
 }
 
+type DashboardMetricCardProps = {
+	description: string;
+	label: string;
+	value: number;
+	placeholder?: boolean;
+};
+
 function DashboardMetricCard({
+	description,
 	label,
 	value,
-}: {
-	label: string;
-	value: string;
-}) {
+	placeholder,
+}: DashboardMetricCardProps) {
 	return (
 		<Card className="gap-1">
 			<CardHeader>
 				<CardDescription className="font-medium">{label}</CardDescription>
-				<CardAction>
-					<PlaceholderBadge />
-				</CardAction>
+
+				{ placeholder && <CardAction><PlaceholderBadge /></CardAction> }
 			</CardHeader>
 			<CardContent>
-				<p className="font-bold text-4xl tracking-tight">{value}</p>
+				<p className="font-bold text-4xl tracking-tight">
+					{value.toLocaleString("en-GB")}
+				</p>
+				<p className="mt-2 text-sm text-muted-foreground">
+					{description}
+				</p>
 			</CardContent>
 		</Card>
 	);
@@ -155,7 +154,33 @@ function PlaceholderChart({
 	);
 }
 
-function ManagerDashboard({ name }: { name: string | undefined }) {
+function ManagerDashboard({
+	metrics,
+	name,
+}: {
+	metrics: DashboardMetrics;
+	name: string | undefined;
+}) {
+	const metricCards: DashboardMetricCardProps[] = [
+		{
+			label: "Expiring Competencies",
+			value: metrics.expiringCompetencies,
+			description: "Competencies due to expire within the next 14 days.",
+		},
+		{
+			label: "Staff in Training",
+			value: 8,
+			description: "Staff currently with training hours.",
+			placeholder: true,
+		},
+		{
+			label: "Under-covered Positions",
+			value: metrics.underCoveredRidePositions,
+			description:
+				"Ride-position pairs with fewer than 3x the required competent staff.",
+		},
+	];
+
 	return (
 		<main className="flex min-h-full flex-1 flex-col gap-4 px-4 py-8 lg:px-8">
 			<section className="flex flex-col gap-4 rounded-4xl border border-emerald-800 bg-linear-to-br from-green-900 via-emerald-900 to-emerald-950 px-6 py-8 text-white shadow-xl shadow-emerald-950/20">
@@ -259,11 +284,6 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
-	const user = await prisma.staffMember.findUnique({
-		where: { id: session.sub },
-		select: { firstName: true },
-	});
-
 	if (session.roleName === "Team Leader") {
 		return <TeamLeaderDashboardPlaceholder />;
 	}
@@ -277,7 +297,15 @@ export default async function DashboardPage() {
 			return <TeamLeaderDashboardPlaceholder />;
 		}
 
-		return <ManagerDashboard name={user?.firstName} />;
+		const [user, metrics] = await Promise.all([
+			prisma.staffMember.findUnique({
+				where: { id: session.sub },
+				select: { firstName: true },
+			}),
+			getDashboardMetricsForBusiness(session.businessId),
+		]);
+
+		return <ManagerDashboard metrics={metrics} name={user?.firstName} />;
 	}
 
 	return null;

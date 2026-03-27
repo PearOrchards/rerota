@@ -22,7 +22,7 @@ import type {
 	RideWithExtra,
 	StaffMemberWithCompetencies,
 } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, getRidePositionKey } from "@/lib/utils";
 import { ConfirmEntityModal } from "@/components/ConfirmEntityModal";
 import { toast } from "sonner";
 
@@ -60,9 +60,6 @@ type RidePositionCellProps = {
   quantity: number;
   staffNameById: Map<string, string>;
 };
-
-const getRidePositionKey = (rideId: string, positionId: string) =>
-	`${rideId}:${positionId}`;
 
 function RidePositionCell({
 	assignments,
