@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import DashboardTrendChart from "@/components/DashboardTrendChart";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardAction,
@@ -12,41 +10,18 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import DashboardTasksCard from "@/components/dashboard/DashboardTasksCard";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import {
 	getDashboardMetricsForBusiness,
-	type DashboardMetrics,
+	getDashboardTasksForBusiness,
 } from "@/lib/server/metrics";
+import type { DashboardTask, DashboardMetrics } from "@/lib/types/dashboard";
 import {
 	resolveManagerSidebarViewMode,
 	SIDEBAR_VIEW_MODE_COOKIE_NAME,
 } from "@/lib/sidebarViewMode";
-import { ChevronRight } from "lucide-react";
-
-const importantTasks = [
-	{
-		title: "Review expiring competencies",
-		description: "Placeholder task (potential example)",
-		href: "/competencies",
-	},
-	{
-		title: "Check staff in training",
-		description: "Placeholder task (potential example)",
-		href: "/staff",
-	},
-	{
-		title: "Audit rides with thin cover",
-		description: "Placeholder task (potential example)",
-		href: "/rides",
-	},
-	{
-		title: "Update business thresholds",
-		description: "Placeholder task (potential example)",
-		href: "/numbers",
-	},
-] as const;
 
 const uptimeChartData = [
 	{ label: "W1", value: 92 },
@@ -69,16 +44,16 @@ const happinessChartData = [
 function PlaceholderBadge() {
 	return (
 		<Badge variant="outline" className="uppercase tracking-widest">
-			Placeholder
+      Placeholder
 		</Badge>
 	);
 }
 
 type DashboardMetricCardProps = {
-	description: string;
-	label: string;
-	value: number;
-	placeholder?: boolean;
+  description: string;
+  label: string;
+  value: number;
+  placeholder?: boolean;
 };
 
 function DashboardMetricCard({
@@ -92,15 +67,17 @@ function DashboardMetricCard({
 			<CardHeader>
 				<CardDescription className="font-medium">{label}</CardDescription>
 
-				{ placeholder && <CardAction><PlaceholderBadge /></CardAction> }
+				{placeholder && (
+					<CardAction>
+						<PlaceholderBadge />
+					</CardAction>
+				)}
 			</CardHeader>
 			<CardContent>
 				<p className="font-bold text-4xl tracking-tight">
 					{value.toLocaleString("en-GB")}
 				</p>
-				<p className="mt-2 text-sm text-muted-foreground">
-					{description}
-				</p>
+				<p className="mt-2 text-sm text-muted-foreground">{description}</p>
 			</CardContent>
 		</Card>
 	);
@@ -116,17 +93,17 @@ function PlaceholderChart({
 	valueSuffix,
 	maxFractionDigits,
 }: {
-	color: string;
-	data: Array<{
-		label: string;
-		value: number;
-	}>;
-	description: string;
-	maxFractionDigits?: number;
-	summary: string;
-	title: string;
-	valueLabel: string;
-	valueSuffix?: string;
+  color: string;
+  data: Array<{
+    label: string;
+    value: number;
+  }>;
+  description: string;
+  maxFractionDigits?: number;
+  summary: string;
+  title: string;
+  valueLabel: string;
+  valueSuffix?: string;
 }) {
 	return (
 		<Card>
@@ -157,9 +134,13 @@ function PlaceholderChart({
 function ManagerDashboard({
 	metrics,
 	name,
+	tasks,
+	dismissalScope,
 }: {
-	metrics: DashboardMetrics;
-	name: string | undefined;
+  metrics: DashboardMetrics;
+  name: string | undefined;
+  tasks: DashboardTask[];
+  dismissalScope: string;
 }) {
 	const metricCards: DashboardMetricCardProps[] = [
 		{
@@ -177,7 +158,7 @@ function ManagerDashboard({
 			label: "Under-covered Positions",
 			value: metrics.underCoveredRidePositions,
 			description:
-				"Ride-position pairs with fewer than 3x the required competent staff.",
+        "Ride-position pairs with fewer than 3x the required competent staff.",
 		},
 	];
 
@@ -201,39 +182,11 @@ function ManagerDashboard({
 			</section>
 
 			<section className="grid items-start gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-				<Card className="self-start">
-					<CardHeader>
-						<CardTitle className="text-lg">Your Tasks</CardTitle>
-						<CardDescription>
-							Here&#39;s what needs your attention the most:
-						</CardDescription>
-
-						<CardAction>
-							<PlaceholderBadge />
-						</CardAction>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{importantTasks.map((task, index) => (
-							<div key={task.title} className="space-y-4">
-								<div className="flex flex-row items-end justify-between">
-									<div className="space-y-1">
-										<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-											Task {index + 1}
-										</p>
-										<h3 className="font-semibold">{task.title}</h3>
-										<p className="text-sm text-muted-foreground">
-											{task.description}
-										</p>
-									</div>
-									<Button asChild variant="secondary" size="sm">
-										<Link href={task.href}>Go <ChevronRight /></Link>
-									</Button>
-								</div>
-								{ index < importantTasks.length - 1 && <Separator /> }
-							</div>
-						))}
-					</CardContent>
-				</Card>
+				<DashboardTasksCard
+					key={dismissalScope}
+					tasks={tasks}
+					dismissalScope={dismissalScope}
+				/>
 
 				<div className="grid gap-4">
 					<PlaceholderChart
@@ -297,15 +250,23 @@ export default async function DashboardPage() {
 			return <TeamLeaderDashboardPlaceholder />;
 		}
 
-		const [user, metrics] = await Promise.all([
+		const [user, metrics, tasks] = await Promise.all([
 			prisma.staffMember.findUnique({
 				where: { id: session.sub },
 				select: { firstName: true },
 			}),
 			getDashboardMetricsForBusiness(session.businessId),
+			getDashboardTasksForBusiness(session.businessId),
 		]);
 
-		return <ManagerDashboard metrics={metrics} name={user?.firstName} />;
+		return (
+			<ManagerDashboard
+				metrics={metrics}
+				name={user?.firstName}
+				tasks={tasks}
+				dismissalScope={`${session.businessId}:${session.sub}`}
+			/>
+		);
 	}
 
 	return null;
