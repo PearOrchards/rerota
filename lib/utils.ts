@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export function getRidePositionKey(rideId: string, positionId: string) {
+	return `${rideId}:${positionId}`;
+}
+
 /**
  * Returns a human-readable error message for displaying to a front-end user.
  * @param error - The error object to extract the message from.

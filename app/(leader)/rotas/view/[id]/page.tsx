@@ -5,6 +5,7 @@ import { getRotaById } from "@/lib/actions/rotas";
 import { getPositions } from "@/lib/actions/positions";
 import { getRides } from "@/lib/actions/rides";
 import { getStaff } from "@/lib/actions/staff";
+import { getRidePositionKey } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -19,9 +20,6 @@ import ActivateRotaButton from "./ActivateRotaButton";
 type PageProps = {
   params: Promise<{ id: string }>;
 };
-
-const getRidePositionKey = (rideId: string, positionId: string) =>
-	`${rideId}:${positionId}`;
 
 export default async function ViewRotaPage({ params }: PageProps) {
 	const { id } = await params;
