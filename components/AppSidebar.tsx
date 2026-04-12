@@ -187,7 +187,7 @@ export function AppSidebar({
 
 	return (
 		<Sidebar>
-			<SidebarHeader className="bg-zinc-800/50 shadow-md m-2 rounded-xl px-4 font-bold tracking-wide">
+			<SidebarHeader className="bg-zinc-200/50 dark:bg-zinc-800/50 shadow-md m-2 rounded-xl px-4 font-bold tracking-wide">
 				<div className="flex items-center justify-between">
 					<span>REROTA</span>
 					{viewMode ? (

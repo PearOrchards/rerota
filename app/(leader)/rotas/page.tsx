@@ -21,7 +21,7 @@ function TodayRotaBox({
 	switch (rotaStatus) {
 		case RotaStatus.DRAFT:
 			return (
-				<div className="bg-zinc-600 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
+				<div className="bg-zinc-200 dark:bg-zinc-600 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
 					<div>
 						<h2 className="font-semibold text-2xl">ROTA IN PROGRESS</h2>
 						<p className="italic">Click on the arrow on the right to <b>continue</b>.</p>
@@ -72,7 +72,7 @@ function TodayRotaBox({
 
 		case RotaStatus.ARCHIVED:
 			return (
-				<div className="bg-zinc-600 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
+				<div className=" bg-zinc-200 dark:bg-zinc-600 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
 					<div>
 						<h2 className="font-semibold text-2xl">ROTA DONE</h2>
 						<p className="italic">Click on the arrow on the right to <b>review</b>.</p>
@@ -89,7 +89,7 @@ function TodayRotaBox({
 
 		default:
 			return (
-				<div className="bg-zinc-700 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
+				<div className="bg-zinc-300 dark:bg-zinc-700 w-full p-4 rounded-2xl flex flex-row justify-between items-center">
 					<div>
 						<h2 className="font-semibold text-2xl">NO ROTA TODAY</h2>
 						<p className="italic">Click on the arrow on the right to <b>start</b>.</p>
