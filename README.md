@@ -34,6 +34,11 @@ AUTH_ACCESS_TTL_MINUTES=15
 AUTH_REFRESH_TTL_DAYS=30
 AUTH_MAGIC_LINK_TTL_MINUTES=15
 AUTH_COOKIE_DOMAIN=
+
+# Get from Zoho Mail (use app password!)
+SMTP_HOST=
+SMTP_USER=
+SMTP_PASS=
 ```
 
 Adjust `requiredRoleForPath` in `lib/auth/rbac.ts` as new sections are added.
